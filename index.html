@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recetas Personales</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/style.css" />
+  </head>
+  <body>
+    <div class="app-bg" aria-hidden="true"></div>
+
+    <div class="container">
+      <header class="topbar">
+        <div class="brand">
+          <p class="kicker">Recetario personal</p>
+          <h1>Mis recetas</h1>
+          <p class="subtitle">Todo ordenado, bonito y privado para administrar sin exponer controles al publico.</p>
+        </div>
+
+        <div class="topbar-actions">
+          <span id="adminStatusChip" class="admin-chip" aria-live="polite">Modo publico</span>
+          <button id="btnAdminOpen" class="btn btn-soft" type="button">Panel admin</button>
+        </div>
+      </header>
+
+      <section class="search-panel" aria-label="Busqueda y filtros">
+        <label class="search-field">
+          <span>Buscar receta</span>
+          <input id="searchInput" type="search" placeholder="Titulo, ingrediente, categoria o preparacion" />
+        </label>
+
+        <div class="filters-row">
+          <label>
+            <span>Categoria</span>
+            <select id="categoryFilter">
+              <option value="all">Todas</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Tiempo maximo</span>
+            <select id="timeFilter">
+              <option value="all">Sin limite</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">60 min</option>
+              <option value="90">90 min</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Dificultad</span>
+            <select id="difficultyFilter">
+              <option value="all">Todas</option>
+              <option value="facil">Facil</option>
+              <option value="media">Media</option>
+              <option value="alta">Alta</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Ordenar por</span>
+            <select id="sortSelect">
+              <option value="updated_desc">Mas recientes</option>
+              <option value="updated_asc">Mas antiguas</option>
+              <option value="title_asc">Nombre A-Z</option>
+              <option value="title_desc">Nombre Z-A</option>
+              <option value="prep_asc">Tiempo menor</option>
+              <option value="prep_desc">Tiempo mayor</option>
+            </select>
+          </label>
+        </div>
+
+        <div id="activeFilters" class="active-filters" aria-live="polite"></div>
+
+        <section id="adminActions" class="admin-toolbar admin-only" hidden>
+          <button id="btnNew" class="btn btn-primary" type="button">+ Nueva receta</button>
+          <button id="btnExport" class="btn btn-soft" type="button">Exportar JSON</button>
+          <label class="btn btn-soft file-btn" for="importInput">Importar JSON</label>
+          <input id="importInput" type="file" accept="application/json" hidden />
+        </section>
+      </section>
+
+      <section class="status-row" aria-live="polite">
+        <p id="resultsLabel" class="results-label">0 recetas</p>
+        <button id="btnClearFilters" class="text-btn" type="button" hidden>Resetear filtros</button>
+      </section>
+
+      <main>
+        <section id="grid" class="grid" aria-live="polite"></section>
+
+        <section id="empty" class="empty" hidden>
+          <h2>No hay recetas para mostrar</h2>
+          <p>Ajusta los filtros o entra al panel admin para crear una nueva receta.</p>
+          <button id="btnNewEmpty" class="btn btn-primary admin-only" type="button">Crear receta</button>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="adminDialog" class="dialog dialog-admin">
+      <article class="panel">
+        <header class="panel-head">
+          <h2>Panel administrativo</h2>
+          <button class="icon-btn" type="button" data-close-admin aria-label="Cerrar">x</button>
+        </header>
+
+        <p id="adminHint" class="admin-hint">Acceso privado: inicia sesion para gestionar recetas.</p>
+
+        <form id="adminLoginForm" class="admin-login" autocomplete="off">
+          <label class="full">
+            Contrasena admin
+            <div class="inline-field">
+              <input id="adminPassword" name="adminPassword" type="password" minlength="10" required />
+              <button id="btnTogglePassword" class="btn btn-soft" type="button">Mostrar</button>
+            </div>
+          </label>
+
+          <button class="btn btn-primary admin-submit" type="submit">Acceder</button>
+        </form>
+
+        <section id="adminSession" class="admin-actions" hidden>
+          <button id="btnAdminLogout" class="btn btn-danger admin-logout" type="button">Cerrar sesion</button>
+        </section>
+      </article>
+    </dialog>
+
+    <dialog id="formDialog" class="dialog">
+      <form id="recipeForm" class="panel" method="dialog" novalidate>
+        <header class="panel-head">
+          <h2 id="formHeading">Nueva receta</h2>
+          <button class="icon-btn" type="button" data-close-form aria-label="Cerrar">x</button>
+        </header>
+
+        <div class="form-grid">
+          <label>
+            Titulo *
+            <input name="title" required maxlength="80" />
+          </label>
+
+          <label>
+            Categoria *
+            <input name="category" required maxlength="40" />
+          </label>
+
+          <label>
+            Dificultad *
+            <select name="difficulty" required>
+              <option value="facil">Facil</option>
+              <option value="media" selected>Media</option>
+              <option value="alta">Alta</option>
+            </select>
+          </label>
+
+          <label>
+            Momento
+            <input name="occasion" maxlength="40" placeholder="Diario, especial, finde..." />
+          </label>
+
+          <label>
+            Tiempo (min)
+            <input name="prepTime" type="number" min="1" />
+          </label>
+
+          <label class="full">
+            Imagen por URL (opcional)
+            <input name="image" type="url" placeholder="https://..." />
+          </label>
+
+          <label class="full">
+            O subir imagen (opcional)
+            <input id="imageFile" type="file" accept="image/*" />
+          </label>
+
+          <label class="full">
+            Ingredientes (uno por linea) *
+            <textarea name="ingredients" rows="5" required></textarea>
+          </label>
+
+          <label class="full">
+            Pasos (uno por linea) *
+            <textarea name="steps" rows="5" required></textarea>
+          </label>
+
+          <label class="full">
+            Descripcion / notas
+            <textarea name="notes" rows="4"></textarea>
+          </label>
+        </div>
+
+        <footer class="panel-foot">
+          <p id="formError" class="error" aria-live="assertive"></p>
+          <div class="row">
+            <button class="btn btn-soft" type="button" data-close-form>Cancelar</button>
+            <button class="btn btn-primary" type="submit">Guardar receta</button>
+          </div>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog id="detailDialog" class="dialog">
+      <article class="panel panel-detail">
+        <header class="panel-head">
+          <h2 id="detailTitle">Detalle</h2>
+          <button class="icon-btn" type="button" data-close-detail aria-label="Cerrar">x</button>
+        </header>
+
+        <section id="detailBody"></section>
+
+        <footer class="panel-foot panel-foot-end">
+          <button class="btn btn-soft" type="button" data-close-detail>Cerrar</button>
+        </footer>
+      </article>
+    </dialog>
+
+    <template id="cardTpl">
+      <article class="card reveal-up">
+        <div class="thumb-wrap"><img class="thumb" alt="Imagen de receta" loading="lazy" decoding="async" /></div>
+        <div class="card-body">
+          <p class="badge"></p>
+          <h3 class="title"></h3>
+          <p class="meta"></p>
+          <p class="desc"></p>
+          <div class="card-stats">
+            <span class="mini-pill stat-ingredients"></span>
+            <span class="mini-pill stat-difficulty"></span>
+          </div>
+        </div>
+
+        <footer class="card-actions">
+          <button type="button" class="btn btn-soft btn-view">Ver</button>
+          <button type="button" class="btn btn-soft btn-edit admin-only">Editar</button>
+          <button type="button" class="btn btn-danger btn-delete admin-only">Eliminar</button>
+        </footer>
+      </article>
+    </template>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="assets/js/app.js" defer></script>
+  </body>
+</html>
