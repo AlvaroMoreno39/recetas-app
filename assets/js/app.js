@@ -23,8 +23,18 @@ const el = {
   btnExport: document.getElementById('btnExport'),
   importInput: document.getElementById('importInput'),
   searchInput: document.getElementById('searchInput'),
+<<<<<<< HEAD
   typeFilter: document.getElementById('typeFilter') || document.getElementById('categoryFilter'),
   profileFilter: document.getElementById('profileFilter') || document.getElementById('difficultyFilter'),
+=======
+<<<<<<< HEAD
+  typeFilter: document.getElementById('typeFilter') || document.getElementById('categoryFilter'),
+  profileFilter: document.getElementById('profileFilter') || document.getElementById('difficultyFilter'),
+=======
+  typeFilter: document.getElementById('typeFilter'),
+  profileFilter: document.getElementById('profileFilter'),
+>>>>>>> a45e3ea82dbc1bb3097052cd41c737e7b6047c2a
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
   timeFilter: document.getElementById('timeFilter'),
   sortSelect: document.getElementById('sortSelect'),
   activeFilters: document.getElementById('activeFilters'),
@@ -84,6 +94,10 @@ function bindEvents() {
     renderRecipes();
   }, 140);
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
   if (el.searchInput) {
     el.searchInput.addEventListener('input', (event) => updateSearch(event.target.value));
   }
@@ -115,6 +129,28 @@ function bindEvents() {
       renderRecipes();
     });
   }
+<<<<<<< HEAD
+=======
+=======
+  el.searchInput.addEventListener('input', (event) => updateSearch(event.target.value));
+  el.typeFilter.addEventListener('change', (event) => {
+    state.filters.type = event.target.value;
+    renderRecipes();
+  });
+  el.profileFilter.addEventListener('change', (event) => {
+    state.filters.profile = event.target.value;
+    renderRecipes();
+  });
+  el.timeFilter.addEventListener('change', (event) => {
+    state.filters.duration = event.target.value;
+    renderRecipes();
+  });
+  el.sortSelect.addEventListener('change', (event) => {
+    state.filters.sort = event.target.value;
+    renderRecipes();
+  });
+>>>>>>> a45e3ea82dbc1bb3097052cd41c737e7b6047c2a
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
 
   if (el.btnClearFilters) el.btnClearFilters.addEventListener('click', clearFilters);
   if (el.form) el.form.addEventListener('submit', onSubmitForm);
@@ -147,6 +183,10 @@ function bindEvents() {
   if (el.adminLoginForm) el.adminLoginForm.addEventListener('submit', onAdminLogin);
   if (el.btnAdminLogout) el.btnAdminLogout.addEventListener('click', adminLogout);
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
   if (el.btnTogglePassword) {
     el.btnTogglePassword.addEventListener('click', () => {
       const show = el.adminPassword?.type === 'password';
@@ -159,6 +199,20 @@ function bindEvents() {
   document.addEventListener('keydown', (event) => {
     if (shouldIgnoreShortcut(event.target)) return;
     if (event.key === '/' && el.searchInput) {
+<<<<<<< HEAD
+=======
+=======
+  el.btnTogglePassword.addEventListener('click', () => {
+    const show = el.adminPassword.type === 'password';
+    el.adminPassword.type = show ? 'text' : 'password';
+    el.btnTogglePassword.textContent = show ? 'Ocultar' : 'Mostrar';
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (shouldIgnoreShortcut(event.target)) return;
+    if (event.key === '/') {
+>>>>>>> a45e3ea82dbc1bb3097052cd41c737e7b6047c2a
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
       event.preventDefault();
       el.searchInput.focus();
     }
@@ -171,6 +225,10 @@ function bindEvents() {
 
 function applyAdminState() {
   document.body.classList.toggle('is-admin', state.isAdmin);
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
   if (el.adminActions) el.adminActions.hidden = !state.isAdmin;
   if (el.adminSession) el.adminSession.hidden = !state.isAdmin;
   if (el.adminLoginForm) el.adminLoginForm.hidden = state.isAdmin;
@@ -187,10 +245,31 @@ function applyAdminState() {
       el.adminStatusChip.textContent = 'Solo lectura';
       el.adminStatusChip.classList.remove('is-admin');
     }
+<<<<<<< HEAD
+=======
+=======
+  el.adminActions.hidden = !state.isAdmin;
+  el.adminSession.hidden = !state.isAdmin;
+  el.adminLoginForm.hidden = state.isAdmin;
+
+  if (state.isAdmin) {
+    el.adminHint.textContent = 'Sesion admin activa. Puedes crear, editar, importar y exportar.';
+    el.adminStatusChip.textContent = 'Admin activo';
+    el.adminStatusChip.classList.add('is-admin');
+  } else {
+    el.adminHint.textContent = 'Acceso privado: inicia sesion para gestionar recetas.';
+    el.adminStatusChip.textContent = 'Solo lectura';
+    el.adminStatusChip.classList.remove('is-admin');
+>>>>>>> a45e3ea82dbc1bb3097052cd41c737e7b6047c2a
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
   }
 }
 
 function openAdminDialog() {
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
   if (el.btnAdminOpen) el.btnAdminOpen.blur();
   if (el.adminActions) el.adminActions.hidden = !state.isAdmin;
   if (el.adminSession) el.adminSession.hidden = !state.isAdmin;
@@ -201,6 +280,21 @@ function openAdminDialog() {
 
 function closeAdminDialog() {
   closeDialog(el.adminDialog);
+<<<<<<< HEAD
+=======
+=======
+  el.btnAdminOpen.blur();
+  el.adminActions.hidden = !state.isAdmin;
+  el.adminSession.hidden = !state.isAdmin;
+  el.adminLoginForm.hidden = state.isAdmin;
+  el.adminDialog.showModal();
+  if (!state.isAdmin) el.adminPassword.focus();
+}
+
+function closeAdminDialog() {
+  if (el.adminDialog.open) el.adminDialog.close();
+>>>>>>> a45e3ea82dbc1bb3097052cd41c737e7b6047c2a
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
 }
 
 async function onAdminLogin(event) {
@@ -218,9 +312,21 @@ async function onAdminLogin(event) {
   }
 
   state.isAdmin = true;
+<<<<<<< HEAD
   if (el.adminPassword) el.adminPassword.value = '';
   if (el.adminPassword) el.adminPassword.type = 'password';
   if (el.btnTogglePassword) el.btnTogglePassword.textContent = 'Mostrar';
+=======
+<<<<<<< HEAD
+  if (el.adminPassword) el.adminPassword.value = '';
+  if (el.adminPassword) el.adminPassword.type = 'password';
+  if (el.btnTogglePassword) el.btnTogglePassword.textContent = 'Mostrar';
+=======
+  el.adminPassword.value = '';
+  el.adminPassword.type = 'password';
+  el.btnTogglePassword.textContent = 'Mostrar';
+>>>>>>> a45e3ea82dbc1bb3097052cd41c737e7b6047c2a
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
 
   applyAdminState();
   renderRecipes();
@@ -399,11 +505,24 @@ function renderActiveFilters() {
   if (!el.activeFilters) return;
 
   const chips = [];
+<<<<<<< HEAD
   if (state.filters.query) chips.push(state.filters.query);
   if (state.filters.type !== 'all') chips.push(state.filters.type);
   if (state.filters.profile !== 'all') chips.push(formatProfile(state.filters.profile));
   if (state.filters.duration !== 'all' && el.timeFilter) chips.push(el.timeFilter.selectedOptions[0].textContent);
   if (state.filters.sort !== 'updated_desc' && el.sortSelect) chips.push(el.sortSelect.selectedOptions[0].textContent);
+=======
+  if (state.filters.query) chips.push(`Busqueda: ${state.filters.query}`);
+  if (state.filters.type !== 'all') chips.push(`Tipo: ${state.filters.type}`);
+  if (state.filters.profile !== 'all') chips.push(`Sabor: ${formatProfile(state.filters.profile)}`);
+<<<<<<< HEAD
+  if (state.filters.duration !== 'all' && el.timeFilter) chips.push(`Duracion: ${el.timeFilter.selectedOptions[0].textContent}`);
+  if (state.filters.sort !== 'updated_desc' && el.sortSelect) chips.push(`Orden: ${el.sortSelect.selectedOptions[0].textContent}`);
+=======
+  if (state.filters.duration !== 'all') chips.push(`Duracion: ${el.timeFilter.selectedOptions[0].textContent}`);
+  if (state.filters.sort !== 'updated_desc') chips.push(`Orden: ${el.sortSelect.selectedOptions[0].textContent}`);
+>>>>>>> a45e3ea82dbc1bb3097052cd41c737e7b6047c2a
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
 
   el.activeFilters.innerHTML = '';
   chips.forEach((chip) => {
@@ -434,8 +553,16 @@ function hasActiveFilters() {
 }
 
 function renderTypeFilter() {
+<<<<<<< HEAD
   if (!el.typeFilter) return;
 
+=======
+<<<<<<< HEAD
+  if (!el.typeFilter) return;
+
+=======
+>>>>>>> a45e3ea82dbc1bb3097052cd41c737e7b6047c2a
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
   const types = [...new Set(state.recipes.map((item) => item.type))].sort((a, b) =>
     a.localeCompare(b, 'es', { sensitivity: 'base' })
   );
@@ -486,7 +613,15 @@ function openForm(recipeId = null) {
 
 function closeForm() {
   state.editingId = null;
+<<<<<<< HEAD
   closeDialog(el.formDialog);
+=======
+<<<<<<< HEAD
+  closeDialog(el.formDialog);
+=======
+  if (el.formDialog.open) el.formDialog.close();
+>>>>>>> a45e3ea82dbc1bb3097052cd41c737e7b6047c2a
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
 }
 
 function openDetail(recipeId) {
@@ -529,7 +664,15 @@ function openDetail(recipeId) {
 }
 
 function closeDetail() {
+<<<<<<< HEAD
   closeDialog(el.detailDialog);
+=======
+<<<<<<< HEAD
+  closeDialog(el.detailDialog);
+=======
+  if (el.detailDialog.open) el.detailDialog.close();
+>>>>>>> a45e3ea82dbc1bb3097052cd41c737e7b6047c2a
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
 }
 
 function onGridClick(event) {
@@ -573,12 +716,26 @@ function clearFilters() {
   state.filters.duration = 'all';
   state.filters.sort = 'updated_desc';
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
   if (el.searchInput) el.searchInput.value = '';
   if (el.typeFilter) el.typeFilter.value = 'all';
   if (el.profileFilter) el.profileFilter.value = 'all';
   if (el.timeFilter) el.timeFilter.value = 'all';
   if (el.sortSelect) el.sortSelect.value = 'updated_desc';
 
+<<<<<<< HEAD
+=======
+=======
+  el.searchInput.value = '';
+  el.typeFilter.value = 'all';
+  el.profileFilter.value = 'all';
+  el.timeFilter.value = 'all';
+  el.sortSelect.value = 'updated_desc';
+>>>>>>> a45e3ea82dbc1bb3097052cd41c737e7b6047c2a
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
   renderRecipes();
 }
 
@@ -838,9 +995,18 @@ function truncate(text, maxLen) {
 
 function normalizeProfile(value) {
   const normalized = safeString(value).toLowerCase();
+<<<<<<< HEAD
   if (normalized === 'facil') return 'salado';
   if (normalized === 'media') return 'mixto';
   if (normalized === 'alta') return 'salado';
+=======
+<<<<<<< HEAD
+  if (normalized === 'facil') return 'salado';
+  if (normalized === 'media') return 'mixto';
+  if (normalized === 'alta') return 'salado';
+=======
+>>>>>>> a45e3ea82dbc1bb3097052cd41c737e7b6047c2a
+>>>>>>> 39fb85902b3092adb704cb7f928ef53a4a84171f
   if (normalized === 'dulce' || normalized === 'salado' || normalized === 'mixto') return normalized;
   return 'salado';
 }
