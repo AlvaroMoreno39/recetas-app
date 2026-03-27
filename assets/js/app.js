@@ -1,4 +1,4 @@
-﻿const STORAGE_KEY = 'recetas_app_v2';
+﻿const STORAGE_KEY = 'recetas_app_v3';
 const ADMIN_PASSWORD_SHA256 = 'f3f725e47f3efeb1e84c7d1be08f8d2af1e2a86736e75f6fc1444a081680c711';
 const FIELD_ALIASES = { type: 'category', profile: 'difficulty' };
 
@@ -62,12 +62,6 @@ try {
 
 function init() {
   state.isAdmin = false;
-
-  const ensured = ensureBaseRecipes(state.recipes);
-  if (ensured.length !== state.recipes.length) {
-    state.recipes = ensured;
-    persist();
-  }
 
   bindEvents();
   applyAdminState();
@@ -663,78 +657,74 @@ function seed() {
   return [
     {
       id: createId(),
-      title: 'Pasta rapida al ajo y aceite',
-      type: 'Pasta',
-      profile: 'salado',
-      prepTime: 18,
+      title: 'Bizcocho de platano en Thermomix (receta definitiva)',
+      type: 'Bizcocho',
+      profile: 'dulce',
+      prepTime: 50,
       image: '',
-      ingredients: ['200g pasta', '2 dientes de ajo', '3 cdas aceite de oliva', 'Sal y pimienta'],
-      steps: ['Cocer la pasta.', 'Dorar el ajo en aceite.', 'Mezclar todo y ajustar sal.'],
-      notes: 'Un clasico rapido para cuando tienes poco tiempo.',
-      updatedAt: new Date().toISOString(),
+      ingredients: [
+        '3 platanos maduros',
+        '2 huevos',
+        '120 g azucar',
+        '55 g mantequilla',
+        '25 g aceite suave (girasol u oliva suave)',
+        '200 g harina de reposteria',
+        '1 sobre levadura quimica (15-16 g)',
+        '50 ml leche',
+        '1 pizca de sal',
+        '1 cucharadita de vainilla (opcional)',
+        'Opcional: 70-80 g pepitas de chocolate o 40 g nueces'
+      ],
+      steps: [
+        'Precalienta horno a 180C, calor arriba y abajo.',
+        'Tritura 3 platanos: 5 seg / vel 5.',
+        'Anade huevos, azucar, mantequilla y aceite: 20 seg / vel 4.',
+        'Si mantequilla dura: 20 seg / 50C / vel 2 antes.',
+        'Anade harina, levadura, sal, leche y vainilla: 15 seg / vel 4.',
+        'Opcional chocolate o nueces: 5 seg / giro inverso / vel 3.',
+        'Vierte en molde plum cake engrasado o con papel de horno.',
+        'Hornea a 180C durante 35-45 min (puede llegar a 50 min).',
+        'Punto correcto: palillo con migas humedas, sin masa liquida.',
+        'Deja 10-15 min en molde, desmolda y enfria 20-30 min antes de cortar.',
+        'Conservacion: envolver en film y guardar a temperatura ambiente (2-3 dias).'
+      ],
+      notes: 'Bizcocho jugoso y aromatico para aprovechar platanos maduros.',
+      updatedAt: new Date().toISOString()
     },
     {
       id: createId(),
-      title: 'Bowl mediterraneo',
-      type: 'Ensalada',
-      profile: 'salado',
-      prepTime: 15,
+      title: 'Bizcocho de manzana perfecto (Thermomix)',
+      type: 'Bizcocho',
+      profile: 'dulce',
+      prepTime: 55,
       image: '',
-      ingredients: ['Garbanzos', 'Tomate cherry', 'Pepino', 'Aceitunas', 'Queso feta'],
-      steps: ['Lava y corta verduras.', 'Mezcla con los garbanzos.', 'Alina y sirve.'],
-      notes: 'Ligero, fresco y muy facil para diario.',
-      updatedAt: new Date().toISOString(),
-    },
-    bananaThermomixRecipe(),
+      ingredients: [
+        '3 huevos',
+        '150 g azucar',
+        '100 g mantequilla (o 70 g mantequilla + 30 g aceite)',
+        '120 g leche',
+        '200 g harina',
+        '1 sobre levadura (16 g)',
+        '1 pizca de sal',
+        '1 cucharadita de vainilla',
+        '1 cucharadita de canela',
+        '2 manzanas en daditos (peladas)'
+      ],
+      steps: [
+        'Huevos + azucar: 3 min / 37C / vel 4.',
+        'Anade mantequilla: 30 seg / vel 4.',
+        'Anade leche + vainilla: 10 seg / vel 4.',
+        'Anade harina + levadura + sal + canela: 10 seg / vel 4 (solo mezclar).',
+        'Anade manzana en daditos fuera de Thermomix y mezcla con espatula.',
+        'Pasa a molde engrasado (no llenar mas de 2/3).',
+        'Hornea a 180C durante 45-50 min (vigilar desde min 40).',
+        'Palillo limpio: listo. Si sale humedo, hornear 5-10 min mas.',
+        'Enfriar 10-15 min en molde y despues desmoldar.'
+      ],
+      notes: 'Trucos clave: no sobrebatir la harina, manzana en dados pequenos, 2 manzanas para jugosidad y canela + vainilla para sabor.',
+      updatedAt: new Date().toISOString()
+    }
   ];
-}
-
-function bananaThermomixRecipe() {
-  return {
-    id: createId(),
-    title: 'Bizcocho de platano en Thermomix (receta definitiva)',
-    type: 'Bizcocho',
-    profile: 'dulce',
-    prepTime: 60,
-    image: '',
-    ingredients: [
-      '3 platanos maduros',
-      '2 huevos',
-      '120 g azucar',
-      '55 g mantequilla',
-      '25 g aceite suave (girasol u oliva suave)',
-      '200 g harina de reposteria',
-      '1 sobre levadura quimica (15-16 g)',
-      '50 ml leche',
-      '1 pizca de sal',
-      '1 cucharadita de vainilla (opcional)',
-      'Opcional: 70-80 g pepitas de chocolate o 40 g nueces',
-    ],
-    steps: [
-      'Precalienta el horno a 180C con calor arriba y abajo.',
-      'Tritura 3 platanos: 5 seg / vel 5.',
-      'Anade huevos, azucar, mantequilla y aceite: 20 seg / vel 4.',
-      'Si la mantequilla esta dura: 20 seg / 50C / vel 2 antes de mezclar.',
-      'Anade harina, levadura, sal, leche y vainilla: 15 seg / vel 4.',
-      'Opcional chocolate o nueces: 5 seg / giro inverso / vel 3.',
-      'Vierte en molde plum cake engrasado o con papel de horno.',
-      'Hornea a 180C entre 35 y 45 min (puede llegar a 50 min).',
-      'Punto correcto: palillo con migas humedas sin masa liquida.',
-      'Deja 10-15 min en el molde, desmolda y enfria 20-30 min antes de cortar.',
-      'Conservacion: envolver en film y guardar a temperatura ambiente (2-3 dias).',
-    ],
-    notes: 'Bizcocho jugoso y aromatico para aprovechar platanos maduros.',
-    updatedAt: new Date().toISOString(),
-  };
-}
-
-function ensureBaseRecipes(recipes) {
-  const list = [...recipes];
-  const hasBanana = list.some(
-    (recipe) => safeString(recipe.title).toLowerCase() === 'bizcocho de platano en thermomix (receta definitiva)'
-  );
-  if (!hasBanana) list.unshift(bananaThermomixRecipe());
-  return list;
 }
 
 function exportRecipes() {
@@ -760,12 +750,10 @@ async function importRecipes(event) {
       return;
     }
 
-    state.recipes = ensureBaseRecipes(
-      parsed
-        .map(normalizeRecipe)
-        .filter((recipe) => recipe.title && recipe.type)
-        .sort((a, b) => dateValue(b.updatedAt) - dateValue(a.updatedAt))
-    );
+    state.recipes = parsed
+      .map(normalizeRecipe)
+      .filter((recipe) => recipe.title && recipe.type)
+      .sort((a, b) => dateValue(b.updatedAt) - dateValue(a.updatedAt));
 
     persist();
     renderTypeFilter();
@@ -1030,3 +1018,7 @@ function createCardNode() {
   `;
   return wrapper;
 }
+
+
+
+
