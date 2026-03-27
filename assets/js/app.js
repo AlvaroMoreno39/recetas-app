@@ -149,7 +149,8 @@ function bindEvents() {
 
   if (el.btnTogglePassword) {
     el.btnTogglePassword.addEventListener('click', () => {
-      const show = el.adminPassword.type === 'password';
+      const show = el.adminPassword?.type === 'password';
+      if (!el.adminPassword) return;
       el.adminPassword.type = show ? 'text' : 'password';
       el.btnTogglePassword.textContent = show ? 'Ocultar' : 'Mostrar';
     });
@@ -246,10 +247,20 @@ async function onSubmitForm(event) {
   event.preventDefault();
   if (!requireAdmin()) return;
 
+  if (!el.form || !el.formError) return;
   el.formError.textContent = '';
+
   const formData = new FormData(el.form);
   const uploadedImage = await readFileAsDataUrl(el.imageFile?.files?.[0]);
   const existing = state.recipes.find((item) => item.id === state.editingId);
+
+  const typedImageUrl = value(formData, 'image');
+  const imageCandidate = uploadedImage || typedImageUrl || existing?.image || '';
+  const normalizedImage = normalizeImageUrl(imageCandidate);
+
+  if (!uploadedImage && typedImageUrl && !normalizedImage) {
+    showToast('Ese enlace no es imagen directa. Usa URL directa .jpg/.png o sube archivo.');
+  }
 
   const recipe = {
     id: state.editingId ?? createId(),
@@ -257,7 +268,7 @@ async function onSubmitForm(event) {
     type: value(formData, 'type'),
     profile: normalizeProfile(value(formData, 'profile') || 'salado'),
     prepTime: positiveNumberOrNull(value(formData, 'prepTime')),
-    image: uploadedImage || value(formData, 'image') || existing?.image || '',
+    image: normalizedImage,
     ingredients: toLines(value(formData, 'ingredients')),
     steps: toLines(value(formData, 'steps')),
     notes: value(formData, 'notes'),
@@ -301,14 +312,11 @@ function getProcessedRecipes() {
     const matchesProfile = state.filters.profile === 'all' || recipe.profile === state.filters.profile;
     const matchesDuration = matchesDurationFilter(recipe.prepTime, state.filters.duration);
 
-    const haystack = normalizeText([
-      recipe.title,
-      recipe.type,
-      recipe.profile,
-      recipe.notes,
-      recipe.ingredients.join(' '),
-      recipe.steps.join(' '),
-    ].join(' '));
+    const haystack = normalizeText(
+      [recipe.title, recipe.type, recipe.profile, recipe.notes, recipe.ingredients.join(' '), recipe.steps.join(' ')].join(
+        ' '
+      )
+    );
 
     const matchesQuery = tokens.every((token) => haystack.includes(token));
     return matchesType && matchesProfile && matchesDuration && matchesQuery;
@@ -319,6 +327,7 @@ function getProcessedRecipes() {
 
 function renderRecipes() {
   if (!el.grid) return;
+
   const list = getProcessedRecipes();
   const fragment = document.createDocumentFragment();
 
@@ -329,18 +338,35 @@ function renderRecipes() {
   list.forEach((recipe, index) => {
     const node = createCardNode();
     if (!node) return;
+
     node.dataset.id = recipe.id;
     node.style.animationDelay = `${Math.min(index * 35, 220)}ms`;
 
     const thumb = node.querySelector('.thumb');
-    thumb.src = recipe.image || createPlaceholderImage(recipe.title);
-    thumb.alt = recipe.title;
+    const imageSrc = recipe.image || createPlaceholderImage(recipe.title);
+    if (thumb) {
+      thumb.src = imageSrc;
+      thumb.alt = recipe.title;
+      thumb.referrerPolicy = 'no-referrer';
+      thumb.addEventListener('error', () => {
+        thumb.src = createPlaceholderImage(recipe.title);
+      });
+    }
 
-    node.querySelector('.title').textContent = recipe.title;
-    node.querySelector('.tag-type').textContent = recipe.type;
-    node.querySelector('.tag-profile').textContent = formatProfile(recipe.profile);
-    node.querySelector('.tag-duration').textContent = formatDurationShort(recipe.prepTime);
-    node.querySelector('.desc').textContent = buildCardDescription(recipe);
+    const title = node.querySelector('.title');
+    if (title) title.textContent = recipe.title;
+
+    const tagType = node.querySelector('.tag-type');
+    if (tagType) tagType.textContent = recipe.type;
+
+    const tagProfile = node.querySelector('.tag-profile');
+    if (tagProfile) tagProfile.textContent = formatProfile(recipe.profile);
+
+    const tagDuration = node.querySelector('.tag-duration');
+    if (tagDuration) tagDuration.textContent = formatDurationShort(recipe.prepTime);
+
+    const desc = node.querySelector('.desc');
+    if (desc) desc.textContent = buildCardDescription(recipe);
 
     node.querySelectorAll('.admin-only').forEach((adminNode) => {
       adminNode.hidden = !state.isAdmin;
@@ -355,6 +381,7 @@ function renderRecipes() {
 }
 
 function animateGridRefresh() {
+  if (!el.grid) return;
   el.grid.classList.remove('grid-refresh');
   el.grid.offsetHeight;
   el.grid.classList.add('grid-refresh');
@@ -370,12 +397,13 @@ function buildCardDescription(recipe) {
 
 function renderActiveFilters() {
   if (!el.activeFilters) return;
+
   const chips = [];
-  if (state.filters.query) chips.push(`Busqueda: ${state.filters.query}`);
-  if (state.filters.type !== 'all') chips.push(`Tipo: ${state.filters.type}`);
-  if (state.filters.profile !== 'all') chips.push(`Sabor: ${formatProfile(state.filters.profile)}`);
-  if (state.filters.duration !== 'all' && el.timeFilter) chips.push(`Duracion: ${el.timeFilter.selectedOptions[0].textContent}`);
-  if (state.filters.sort !== 'updated_desc' && el.sortSelect) chips.push(`Orden: ${el.sortSelect.selectedOptions[0].textContent}`);
+  if (state.filters.query) chips.push(state.filters.query);
+  if (state.filters.type !== 'all') chips.push(state.filters.type);
+  if (state.filters.profile !== 'all') chips.push(formatProfile(state.filters.profile));
+  if (state.filters.duration !== 'all' && el.timeFilter) chips.push(el.timeFilter.selectedOptions[0].textContent);
+  if (state.filters.sort !== 'updated_desc' && el.sortSelect) chips.push(el.sortSelect.selectedOptions[0].textContent);
 
   el.activeFilters.innerHTML = '';
   chips.forEach((chip) => {
@@ -429,6 +457,7 @@ function renderTypeFilter() {
 
 function openForm(recipeId = null) {
   if (!requireAdmin()) return;
+  if (!el.form || !el.formHeading || !el.formError) return;
 
   state.editingId = recipeId;
   el.formError.textContent = '';
@@ -461,6 +490,8 @@ function closeForm() {
 }
 
 function openDetail(recipeId) {
+  if (!el.detailTitle || !el.detailBody) return;
+
   const recipe = state.recipes.find((item) => item.id === recipeId);
   if (!recipe) return;
 
@@ -470,7 +501,9 @@ function openDetail(recipeId) {
   const steps = recipe.steps.map((item) => `<li>${escapeHtml(item)}</li>`).join('');
 
   el.detailBody.innerHTML = `
-    <img src="${escapeAttribute(recipe.image || createPlaceholderImage(recipe.title))}" alt="${escapeAttribute(recipe.title)}" class="detail-img" />
+    <img src="${escapeAttribute(recipe.image || createPlaceholderImage(recipe.title))}" alt="${escapeAttribute(
+      recipe.title
+    )}" class="detail-img" />
     <div class="tags">
       <span class="tag">${escapeHtml(recipe.type)}</span>
       <span class="tag">${escapeHtml(formatProfile(recipe.profile))}</span>
@@ -483,6 +516,14 @@ function openDetail(recipeId) {
     <h3>Pasos</h3>
     <ol class="list">${steps}</ol>
   `;
+
+  const detailImg = el.detailBody.querySelector('.detail-img');
+  if (detailImg) {
+    detailImg.referrerPolicy = 'no-referrer';
+    detailImg.addEventListener('error', () => {
+      detailImg.src = createPlaceholderImage(recipe.title);
+    });
+  }
 
   showDialog(el.detailDialog);
 }
@@ -599,7 +640,7 @@ function normalizeRecipe(item) {
     type: inferredType || 'General',
     profile: normalizeProfile(inferredProfile),
     prepTime: positiveNumberOrNull(item.prepTime),
-    image: safeString(item.image),
+    image: normalizeImageUrl(item.image),
     ingredients: Array.isArray(item.ingredients) ? item.ingredients.map(safeString).filter(Boolean) : [],
     steps: Array.isArray(item.steps) ? item.steps.map(safeString).filter(Boolean) : [],
     notes: safeString(item.notes),
@@ -728,6 +769,7 @@ async function importRecipes(event) {
 
 function showToast(message) {
   if (!el.toast) return;
+
   clearTimeout(toastTimer);
   el.toast.textContent = message;
   el.toast.hidden = false;
@@ -836,6 +878,36 @@ function matchesDurationFilter(prepTime, mode) {
 function formatDurationShort(prepTime) {
   if (!Number.isFinite(prepTime) || prepTime <= 0) return 'Sin tiempo';
   return `${prepTime} min`;
+}
+
+function normalizeImageUrl(raw) {
+  const value = safeString(raw);
+  if (!value) return '';
+  if (value.startsWith('data:image/')) return value;
+
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    return value;
+  }
+
+  if (url.protocol === 'http:') {
+    url.protocol = 'https:';
+  }
+
+  const host = url.hostname.toLowerCase();
+
+  if (host.includes('google.') && url.searchParams.has('imgurl')) {
+    const fromQuery = safeString(url.searchParams.get('imgurl'));
+    if (fromQuery) return normalizeImageUrl(fromQuery);
+  }
+
+  if (host === 'images.app.goo.gl') {
+    return '';
+  }
+
+  return url.toString();
 }
 
 function escapeHtml(text) {
