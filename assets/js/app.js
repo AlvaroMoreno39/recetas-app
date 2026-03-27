@@ -10,6 +10,7 @@ const state = {
   editingId: null,
   isAdmin: false,
   backendOnline: false,
+  lastChangedId: null,
   filters: {
     query: '',
     type: 'all',
@@ -45,6 +46,7 @@ const el = {
   detailBody: document.getElementById('detailBody'),
   cardTpl: document.getElementById('cardTpl'),
   toast: document.getElementById('toast'),
+  syncStatusChip: document.getElementById('syncStatusChip'),
   adminStatusChip: document.getElementById('adminStatusChip'),
   btnAdminOpen: document.getElementById('btnAdminOpen'),
   adminLoginForm: document.getElementById('adminLoginForm'),
@@ -70,6 +72,8 @@ async function startApp() {
 
 async function init() {
   state.isAdmin = false;
+  renderSkeletonCards(6);
+  updateSyncStatus('Conectando...');
   state.recipes = await loadRecipes();
 
   bindEvents();
@@ -308,6 +312,7 @@ async function onSubmitForm(event) {
     state.recipes.unshift(recipe);
     showToast('Receta guardada');
   }
+  state.lastChangedId = recipe.id;
 
   await persist();
   renderTypeFilter();
@@ -355,6 +360,8 @@ function renderRecipes() {
   el.grid.innerHTML = '';
   if (el.empty) el.empty.hidden = list.length > 0;
 
+  let consumedHighlight = false;
+
   list.forEach((recipe, index) => {
     const node = createCardNode();
     if (!node) return;
@@ -392,12 +399,19 @@ function renderRecipes() {
       adminNode.hidden = !state.isAdmin;
     });
 
+    if (!consumedHighlight && recipe.id === state.lastChangedId) {
+      node.classList.add('card-highlight');
+      setTimeout(() => node.classList.remove('card-highlight'), 1400);
+      consumedHighlight = true;
+    }
+
     fragment.append(node);
   });
 
   el.grid.append(fragment);
   updateStatus(list.length);
   renderActiveFilters();
+  if (consumedHighlight) state.lastChangedId = null;
 }
 
 function animateGridRefresh() {
@@ -632,13 +646,19 @@ function dateValue(value) {
 
 async function persist() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.recipes));
-  if (!isBackendConfigured()) return;
+  if (!isBackendConfigured()) {
+    updateSyncStatus('Guardado local');
+    return;
+  }
+  updateSyncStatus('Guardando...');
   try {
     await pushRecipesToBackend(state.recipes);
     state.backendOnline = true;
+    updateSyncStatus('Sincronizado');
     applyAdminState();
   } catch (error) {
     state.backendOnline = false;
+    updateSyncStatus('Sin conexion (local)');
     applyAdminState();
     console.error('[recetas-app] persist_backend_error', error);
     showToast('Guardado local OK. Nube no disponible ahora.');
@@ -666,12 +686,15 @@ function loadRecipesLocal() {
 async function loadRecipes() {
   const localRecipes = loadRecipesLocal();
   if (!isBackendConfigured()) {
+    state.backendOnline = false;
+    updateSyncStatus('Guardado local');
     return localRecipes.length > 0 ? localRecipes : seed();
   }
 
   try {
     const remoteRecipes = await pullRecipesFromBackend();
     state.backendOnline = true;
+    updateSyncStatus('Sincronizado');
 
     if (remoteRecipes.length > 0) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteRecipes));
@@ -684,8 +707,54 @@ async function loadRecipes() {
     return initial;
   } catch (error) {
     state.backendOnline = false;
+    updateSyncStatus('Sin conexion (local)');
     console.error('[recetas-app] load_backend_error', error);
     return localRecipes.length > 0 ? localRecipes : seed();
+  }
+}
+
+function renderSkeletonCards(count = 6) {
+  if (!el.grid) return;
+  const total = Math.max(1, count);
+  const fragment = document.createDocumentFragment();
+  el.grid.innerHTML = '';
+  for (let i = 0; i < total; i += 1) {
+    const node = document.createElement('article');
+    node.className = 'card skeleton-card';
+    node.innerHTML = `
+      <div class="thumb-wrap skeleton-box"></div>
+      <div class="card-body">
+        <div class="skeleton-line skeleton-title"></div>
+        <div class="card-tags">
+          <span class="skeleton-pill"></span>
+          <span class="skeleton-pill"></span>
+          <span class="skeleton-pill"></span>
+        </div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line skeleton-short"></div>
+      </div>
+      <footer class="card-actions">
+        <div class="skeleton-btn"></div>
+      </footer>
+    `;
+    fragment.append(node);
+  }
+  if (el.empty) el.empty.hidden = true;
+  if (el.resultsLabel) el.resultsLabel.textContent = 'Cargando recetas...';
+  el.grid.append(fragment);
+}
+
+function updateSyncStatus(text) {
+  if (!el.syncStatusChip) return;
+  const label = safeString(text) || 'Sin estado';
+  el.syncStatusChip.textContent = label;
+  el.syncStatusChip.classList.remove('is-good', 'is-busy', 'is-warn');
+  if (/sincronizado|conectada/i.test(label)) {
+    el.syncStatusChip.classList.add('is-good');
+  } else if (/guardando|conectando|cargando/i.test(label)) {
+    el.syncStatusChip.classList.add('is-busy');
+  } else {
+    el.syncStatusChip.classList.add('is-warn');
   }
 }
 
