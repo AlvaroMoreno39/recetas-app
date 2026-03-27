@@ -1,11 +1,15 @@
 ﻿const STORAGE_KEY = 'recetas_app_v3';
 const ADMIN_PASSWORD_SHA256 = 'f3f725e47f3efeb1e84c7d1be08f8d2af1e2a86736e75f6fc1444a081680c711';
 const FIELD_ALIASES = { type: 'category', profile: 'difficulty' };
+const BACKEND_CONFIG = window.RECETAS_BACKEND || {};
+const SYNC_ROW_ID = safeString(BACKEND_CONFIG.rowId) || 'global';
+const SYNC_TABLE = safeString(BACKEND_CONFIG.table) || 'recipes_state';
 
 const state = {
-  recipes: loadRecipes(),
+  recipes: [],
   editingId: null,
   isAdmin: false,
+  backendOnline: false,
   filters: {
     query: '',
     type: 'all',
@@ -54,14 +58,19 @@ const el = {
 
 let toastTimer = null;
 
-try {
-  init();
-} catch (error) {
-  console.error('[recetas-app] init_error', error);
+void startApp();
+
+async function startApp() {
+  try {
+    await init();
+  } catch (error) {
+    console.error('[recetas-app] init_error', error);
+  }
 }
 
-function init() {
+async function init() {
   state.isAdmin = false;
+  state.recipes = await loadRecipes();
 
   bindEvents();
   applyAdminState();
@@ -169,14 +178,20 @@ function applyAdminState() {
   if (el.adminSession) el.adminSession.hidden = !state.isAdmin;
   if (el.adminLoginForm) el.adminLoginForm.hidden = state.isAdmin;
 
+  const syncLabel = isBackendConfigured()
+    ? state.backendOnline
+      ? 'Nube conectada'
+      : 'Nube no disponible (guardado local)'
+    : 'Sin backend (guardado local)';
+
   if (state.isAdmin) {
-    if (el.adminHint) el.adminHint.textContent = 'Sesion admin activa. Puedes crear, editar, importar y exportar.';
+    if (el.adminHint) el.adminHint.textContent = `Sesion admin activa. Puedes crear, editar, importar y exportar. ${syncLabel}.`;
     if (el.adminStatusChip) {
       el.adminStatusChip.textContent = 'Admin activo';
       el.adminStatusChip.classList.add('is-admin');
     }
   } else {
-    if (el.adminHint) el.adminHint.textContent = 'Acceso privado: inicia sesion para gestionar recetas.';
+    if (el.adminHint) el.adminHint.textContent = `Acceso privado: inicia sesion para gestionar recetas. ${syncLabel}.`;
     if (el.adminStatusChip) {
       el.adminStatusChip.textContent = 'Solo lectura';
       el.adminStatusChip.classList.remove('is-admin');
@@ -294,7 +309,7 @@ async function onSubmitForm(event) {
     showToast('Receta guardada');
   }
 
-  persist();
+  await persist();
   renderTypeFilter();
   renderRecipes();
   closeForm();
@@ -555,17 +570,17 @@ function onGridClick(event) {
   }
   if (button.classList.contains('btn-delete')) {
     if (!requireAdmin()) return;
-    deleteRecipe(recipeId);
+    void deleteRecipe(recipeId);
   }
 }
 
-function deleteRecipe(recipeId) {
+async function deleteRecipe(recipeId) {
   const recipe = state.recipes.find((item) => item.id === recipeId);
   if (!recipe) return;
   if (!confirm(`Seguro que quieres eliminar "${recipe.title}"?`)) return;
 
   state.recipes = state.recipes.filter((item) => item.id !== recipeId);
-  persist();
+  await persist();
   renderTypeFilter();
   renderRecipes();
   showToast('Receta eliminada');
@@ -615,25 +630,114 @@ function dateValue(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function persist() {
+async function persist() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.recipes));
+  if (!isBackendConfigured()) return;
+  try {
+    await pushRecipesToBackend(state.recipes);
+    state.backendOnline = true;
+    applyAdminState();
+  } catch (error) {
+    state.backendOnline = false;
+    applyAdminState();
+    console.error('[recetas-app] persist_backend_error', error);
+    showToast('Guardado local OK. Nube no disponible ahora.');
+  }
 }
 
-function loadRecipes() {
+function loadRecipesLocal() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return seed();
+    if (!raw) return [];
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return seed();
+    if (!Array.isArray(parsed)) return [];
 
     const normalized = parsed
       .filter((item) => item && typeof item === 'object')
       .map(normalizeRecipe)
       .sort((a, b) => dateValue(b.updatedAt) - dateValue(a.updatedAt));
 
-    return normalized.length > 0 ? normalized : seed();
+    return normalized;
   } catch {
-    return seed();
+    return [];
+  }
+}
+
+async function loadRecipes() {
+  const localRecipes = loadRecipesLocal();
+  if (!isBackendConfigured()) {
+    return localRecipes.length > 0 ? localRecipes : seed();
+  }
+
+  try {
+    const remoteRecipes = await pullRecipesFromBackend();
+    state.backendOnline = true;
+
+    if (remoteRecipes.length > 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteRecipes));
+      return remoteRecipes;
+    }
+
+    const initial = localRecipes.length > 0 ? localRecipes : seed();
+    await pushRecipesToBackend(initial);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+    return initial;
+  } catch (error) {
+    state.backendOnline = false;
+    console.error('[recetas-app] load_backend_error', error);
+    return localRecipes.length > 0 ? localRecipes : seed();
+  }
+}
+
+function isBackendConfigured() {
+  return Boolean(safeString(BACKEND_CONFIG.url) && safeString(BACKEND_CONFIG.anonKey));
+}
+
+function backendHeaders() {
+  const key = safeString(BACKEND_CONFIG.anonKey);
+  return {
+    apikey: key,
+    Authorization: `Bearer ${key}`,
+    'Content-Type': 'application/json',
+  };
+}
+
+async function pullRecipesFromBackend() {
+  const urlBase = safeString(BACKEND_CONFIG.url).replace(/\/+$/, '');
+  const endpoint = `${urlBase}/rest/v1/${encodeURIComponent(SYNC_TABLE)}?id=eq.${encodeURIComponent(SYNC_ROW_ID)}&select=recipes`;
+  const response = await fetch(endpoint, {
+    method: 'GET',
+    headers: backendHeaders(),
+  });
+  if (!response.ok) {
+    throw new Error(`pull_failed_${response.status}`);
+  }
+  const rows = await response.json();
+  const recipes = Array.isArray(rows) && rows[0] ? rows[0].recipes : [];
+  if (!Array.isArray(recipes)) return [];
+  return recipes.map(normalizeRecipe).sort((a, b) => dateValue(b.updatedAt) - dateValue(a.updatedAt));
+}
+
+async function pushRecipesToBackend(recipes) {
+  const urlBase = safeString(BACKEND_CONFIG.url).replace(/\/+$/, '');
+  const endpoint = `${urlBase}/rest/v1/${encodeURIComponent(SYNC_TABLE)}?on_conflict=id`;
+  const body = [
+    {
+      id: SYNC_ROW_ID,
+      recipes,
+      updated_at: new Date().toISOString(),
+    },
+  ];
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      ...backendHeaders(),
+      Prefer: 'resolution=merge-duplicates,return=minimal',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw new Error(`push_failed_${response.status}`);
   }
 }
 
@@ -757,7 +861,7 @@ async function importRecipes(event) {
       .filter((recipe) => recipe.title && recipe.type)
       .sort((a, b) => dateValue(b.updatedAt) - dateValue(a.updatedAt));
 
-    persist();
+    await persist();
     renderTypeFilter();
     renderRecipes();
     showToast('Importacion completada');
@@ -1020,6 +1124,8 @@ function createCardNode() {
   `;
   return wrapper;
 }
+
+
 
 
 
