@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'recetas_app_v2';
+﻿const STORAGE_KEY = 'recetas_app_v2';
 const ADMIN_PASSWORD_SHA256 = 'f3f725e47f3efeb1e84c7d1be08f8d2af1e2a86736e75f6fc1444a081680c711';
 
 const state = {
@@ -7,9 +7,9 @@ const state = {
   isAdmin: false,
   filters: {
     query: '',
-    category: 'all',
-    maxTime: 'all',
-    difficulty: 'all',
+    type: 'all',
+    profile: 'all',
+    duration: 'all',
     sort: 'updated_desc',
   },
 };
@@ -22,9 +22,9 @@ const el = {
   btnExport: document.getElementById('btnExport'),
   importInput: document.getElementById('importInput'),
   searchInput: document.getElementById('searchInput'),
-  categoryFilter: document.getElementById('categoryFilter'),
+  typeFilter: document.getElementById('typeFilter'),
+  profileFilter: document.getElementById('profileFilter'),
   timeFilter: document.getElementById('timeFilter'),
-  difficultyFilter: document.getElementById('difficultyFilter'),
   sortSelect: document.getElementById('sortSelect'),
   activeFilters: document.getElementById('activeFilters'),
   resultsLabel: document.getElementById('resultsLabel'),
@@ -58,15 +58,15 @@ init();
 function init() {
   state.isAdmin = false;
 
-  const ensuredRecipes = ensureBaseRecipes(state.recipes);
-  if (ensuredRecipes.length !== state.recipes.length) {
-    state.recipes = ensuredRecipes;
+  const ensured = ensureBaseRecipes(state.recipes);
+  if (ensured.length !== state.recipes.length) {
+    state.recipes = ensured;
     persist();
   }
 
   bindEvents();
   applyAdminState();
-  renderCategoryFilter();
+  renderTypeFilter();
   renderRecipes();
 }
 
@@ -79,25 +79,19 @@ function bindEvents() {
     renderRecipes();
   }, 140);
 
-  el.searchInput.addEventListener('input', (event) => {
-    updateSearch(event.target.value);
-  });
-
-  el.categoryFilter.addEventListener('change', (event) => {
-    state.filters.category = event.target.value;
+  el.searchInput.addEventListener('input', (event) => updateSearch(event.target.value));
+  el.typeFilter.addEventListener('change', (event) => {
+    state.filters.type = event.target.value;
     renderRecipes();
   });
-
-  el.difficultyFilter.addEventListener('change', (event) => {
-    state.filters.difficulty = event.target.value;
+  el.profileFilter.addEventListener('change', (event) => {
+    state.filters.profile = event.target.value;
     renderRecipes();
   });
-
   el.timeFilter.addEventListener('change', (event) => {
-    state.filters.maxTime = event.target.value;
+    state.filters.duration = event.target.value;
     renderRecipes();
   });
-
   el.sortSelect.addEventListener('change', (event) => {
     state.filters.sort = event.target.value;
     renderRecipes();
@@ -131,19 +125,17 @@ function bindEvents() {
   el.btnAdminLogout.addEventListener('click', adminLogout);
 
   el.btnTogglePassword.addEventListener('click', () => {
-    const isShowing = el.adminPassword.type === 'text';
-    el.adminPassword.type = isShowing ? 'password' : 'text';
-    el.btnTogglePassword.textContent = isShowing ? 'Mostrar' : 'Ocultar';
+    const show = el.adminPassword.type === 'password';
+    el.adminPassword.type = show ? 'text' : 'password';
+    el.btnTogglePassword.textContent = show ? 'Ocultar' : 'Mostrar';
   });
 
   document.addEventListener('keydown', (event) => {
     if (shouldIgnoreShortcut(event.target)) return;
-
     if (event.key === '/') {
       event.preventDefault();
       el.searchInput.focus();
     }
-
     if ((event.key === 'n' || event.key === 'N') && state.isAdmin) {
       event.preventDefault();
       openForm();
@@ -153,19 +145,16 @@ function bindEvents() {
 
 function applyAdminState() {
   document.body.classList.toggle('is-admin', state.isAdmin);
-
   el.adminActions.hidden = !state.isAdmin;
   el.adminSession.hidden = !state.isAdmin;
   el.adminLoginForm.hidden = state.isAdmin;
 
   if (state.isAdmin) {
     el.adminHint.textContent = 'Sesion admin activa. Puedes crear, editar, importar y exportar.';
-    el.btnAdminOpen.textContent = 'Panel admin';
     el.adminStatusChip.textContent = 'Admin activo';
     el.adminStatusChip.classList.add('is-admin');
   } else {
     el.adminHint.textContent = 'Acceso privado: inicia sesion para gestionar recetas.';
-    el.btnAdminOpen.textContent = 'Panel admin';
     el.adminStatusChip.textContent = 'Solo lectura';
     el.adminStatusChip.classList.remove('is-admin');
   }
@@ -173,20 +162,15 @@ function applyAdminState() {
 
 function openAdminDialog() {
   el.btnAdminOpen.blur();
-  // Reinforce visibility rules every time the modal opens.
   el.adminActions.hidden = !state.isAdmin;
   el.adminSession.hidden = !state.isAdmin;
   el.adminLoginForm.hidden = state.isAdmin;
   el.adminDialog.showModal();
-  if (!state.isAdmin) {
-    el.adminPassword.focus();
-  }
+  if (!state.isAdmin) el.adminPassword.focus();
 }
 
 function closeAdminDialog() {
-  if (el.adminDialog.open) {
-    el.adminDialog.close();
-  }
+  if (el.adminDialog.open) el.adminDialog.close();
 }
 
 async function onAdminLogin(event) {
@@ -204,7 +188,6 @@ async function onAdminLogin(event) {
   }
 
   state.isAdmin = true;
-
   el.adminPassword.value = '';
   el.adminPassword.type = 'password';
   el.btnTogglePassword.textContent = 'Mostrar';
@@ -235,7 +218,6 @@ async function onSubmitForm(event) {
   if (!requireAdmin()) return;
 
   el.formError.textContent = '';
-
   const formData = new FormData(el.form);
   const uploadedImage = await readFileAsDataUrl(el.imageFile.files[0]);
   const existing = state.recipes.find((item) => item.id === state.editingId);
@@ -243,9 +225,8 @@ async function onSubmitForm(event) {
   const recipe = {
     id: state.editingId ?? crypto.randomUUID(),
     title: value(formData, 'title'),
-    category: value(formData, 'category'),
-    difficulty: value(formData, 'difficulty') || 'media',
-    occasion: value(formData, 'occasion'),
+    type: value(formData, 'type'),
+    profile: normalizeProfile(value(formData, 'profile') || 'salado'),
     prepTime: positiveNumberOrNull(value(formData, 'prepTime')),
     image: uploadedImage || value(formData, 'image') || existing?.image || '',
     ingredients: toLines(value(formData, 'ingredients')),
@@ -269,42 +250,39 @@ async function onSubmitForm(event) {
   }
 
   persist();
-  renderCategoryFilter();
+  renderTypeFilter();
   renderRecipes();
   closeForm();
 }
 
 function validateRecipe(recipe) {
   if (!recipe.title) return 'El titulo es obligatorio.';
-  if (!recipe.category) return 'La categoria es obligatoria.';
-  if (!recipe.difficulty) return 'La dificultad es obligatoria.';
+  if (!recipe.type) return 'El tipo es obligatorio.';
+  if (!recipe.profile) return 'El sabor es obligatorio.';
   if (recipe.ingredients.length === 0) return 'Agrega al menos 1 ingrediente.';
   if (recipe.steps.length === 0) return 'Agrega al menos 1 paso.';
   return '';
 }
 
 function getProcessedRecipes() {
-  const queryTokens = normalizeText(state.filters.query).split(' ').filter(Boolean);
+  const tokens = normalizeText(state.filters.query).split(' ').filter(Boolean);
 
   const filtered = state.recipes.filter((recipe) => {
-    const matchesCategory = state.filters.category === 'all' || recipe.category === state.filters.category;
-    const matchesDifficulty = state.filters.difficulty === 'all' || recipe.difficulty === state.filters.difficulty;
-
-    const maxTime = Number(state.filters.maxTime);
-    const matchesTime =
-      state.filters.maxTime === 'all' || (Number.isFinite(recipe.prepTime) && recipe.prepTime > 0 && recipe.prepTime <= maxTime);
+    const matchesType = state.filters.type === 'all' || recipe.type === state.filters.type;
+    const matchesProfile = state.filters.profile === 'all' || recipe.profile === state.filters.profile;
+    const matchesDuration = matchesDurationFilter(recipe.prepTime, state.filters.duration);
 
     const haystack = normalizeText([
       recipe.title,
-      recipe.category,
+      recipe.type,
+      recipe.profile,
       recipe.notes,
       recipe.ingredients.join(' '),
       recipe.steps.join(' '),
     ].join(' '));
 
-    const matchesQuery = queryTokens.every((token) => haystack.includes(token));
-
-    return matchesCategory && matchesDifficulty && matchesTime && matchesQuery;
+    const matchesQuery = tokens.every((token) => haystack.includes(token));
+    return matchesType && matchesProfile && matchesDuration && matchesQuery;
   });
 
   return sortRecipes(filtered, state.filters.sort);
@@ -327,19 +305,11 @@ function renderRecipes() {
     thumb.src = recipe.image || createPlaceholderImage(recipe.title);
     thumb.alt = recipe.title;
 
-    node.querySelector('.badge').textContent = recipe.category;
     node.querySelector('.title').textContent = recipe.title;
-
-    const meta = [
-      recipe.prepTime ? `${recipe.prepTime} min` : 'Tiempo no indicado',
-      recipe.occasion ? recipe.occasion : 'Sin momento',
-      formatUpdated(recipe.updatedAt),
-    ].join(' Â· ');
-
-    node.querySelector('.meta').textContent = meta;
+    node.querySelector('.tag-type').textContent = recipe.type;
+    node.querySelector('.tag-profile').textContent = formatProfile(recipe.profile);
+    node.querySelector('.tag-duration').textContent = formatDurationShort(recipe.prepTime);
     node.querySelector('.desc').textContent = buildCardDescription(recipe);
-    node.querySelector('.stat-ingredients').textContent = `${recipe.ingredients.length} ingredientes`;
-    node.querySelector('.stat-difficulty').textContent = formatDifficultyShort(recipe.difficulty);
 
     node.querySelectorAll('.admin-only').forEach((adminNode) => {
       adminNode.hidden = !state.isAdmin;
@@ -349,15 +319,12 @@ function renderRecipes() {
   });
 
   el.grid.append(fragment);
-
   updateStatus(list.length);
   renderActiveFilters();
 }
 
 function animateGridRefresh() {
   el.grid.classList.remove('grid-refresh');
-  // Force reflow so the animation can restart on each render.
-  // eslint-disable-next-line no-unused-expressions
   el.grid.offsetHeight;
   el.grid.classList.add('grid-refresh');
 }
@@ -365,24 +332,20 @@ function animateGridRefresh() {
 function buildCardDescription(recipe) {
   const description = safeString(recipe.notes);
   if (description) return truncate(description, 110);
-
   const firstStep = safeString(recipe.steps[0]);
   if (firstStep) return truncate(firstStep, 110);
-
   return truncate(recipe.ingredients.slice(0, 3).join(', '), 110) || 'Sin descripcion';
 }
 
 function renderActiveFilters() {
   const chips = [];
-
   if (state.filters.query) chips.push(`Busqueda: ${state.filters.query}`);
-  if (state.filters.category !== 'all') chips.push(`Categoria: ${state.filters.category}`);
-  if (state.filters.difficulty !== 'all') chips.push(`Dificultad: ${state.filters.difficulty}`);
-  if (state.filters.maxTime !== 'all') chips.push(`Tiempo <= ${state.filters.maxTime} min`);
+  if (state.filters.type !== 'all') chips.push(`Tipo: ${state.filters.type}`);
+  if (state.filters.profile !== 'all') chips.push(`Sabor: ${formatProfile(state.filters.profile)}`);
+  if (state.filters.duration !== 'all') chips.push(`Duracion: ${el.timeFilter.selectedOptions[0].textContent}`);
   if (state.filters.sort !== 'updated_desc') chips.push(`Orden: ${el.sortSelect.selectedOptions[0].textContent}`);
 
   el.activeFilters.innerHTML = '';
-
   chips.forEach((chip) => {
     const span = document.createElement('span');
     span.className = 'filter-chip';
@@ -399,32 +362,31 @@ function updateStatus(count) {
 function hasActiveFilters() {
   return (
     Boolean(state.filters.query) ||
-    state.filters.category !== 'all' ||
-    state.filters.difficulty !== 'all' ||
-    state.filters.maxTime !== 'all' ||
+    state.filters.type !== 'all' ||
+    state.filters.profile !== 'all' ||
+    state.filters.duration !== 'all' ||
     state.filters.sort !== 'updated_desc'
   );
 }
 
-function renderCategoryFilter() {
-  const categories = [...new Set(state.recipes.map((item) => item.category))].sort((a, b) =>
+function renderTypeFilter() {
+  const types = [...new Set(state.recipes.map((item) => item.type))].sort((a, b) =>
     a.localeCompare(b, 'es', { sensitivity: 'base' })
   );
 
-  el.categoryFilter.innerHTML = '<option value="all">Todas</option>';
-
-  categories.forEach((category) => {
+  el.typeFilter.innerHTML = '<option value="all">Todas</option>';
+  types.forEach((type) => {
     const option = document.createElement('option');
-    option.value = category;
-    option.textContent = category;
-    el.categoryFilter.append(option);
+    option.value = type;
+    option.textContent = type;
+    el.typeFilter.append(option);
   });
 
-  if (![...el.categoryFilter.options].some((opt) => opt.value === state.filters.category)) {
-    state.filters.category = 'all';
+  if (![...el.typeFilter.options].some((opt) => opt.value === state.filters.type)) {
+    state.filters.type = 'all';
   }
 
-  el.categoryFilter.value = state.filters.category;
+  el.typeFilter.value = state.filters.type;
 }
 
 function openForm(recipeId = null) {
@@ -441,9 +403,8 @@ function openForm(recipeId = null) {
 
     el.formHeading.textContent = 'Editar receta';
     setFormValue('title', recipe.title);
-    setFormValue('category', recipe.category);
-    setFormValue('difficulty', recipe.difficulty || 'media');
-    setFormValue('occasion', recipe.occasion || '');
+    setFormValue('type', recipe.type);
+    setFormValue('profile', recipe.profile || 'salado');
     setFormValue('prepTime', recipe.prepTime);
     setFormValue('image', recipe.image && recipe.image.startsWith('http') ? recipe.image : '');
     setFormValue('ingredients', recipe.ingredients.join('\n'));
@@ -458,9 +419,7 @@ function openForm(recipeId = null) {
 
 function closeForm() {
   state.editingId = null;
-  if (el.formDialog.open) {
-    el.formDialog.close();
-  }
+  if (el.formDialog.open) el.formDialog.close();
 }
 
 function openDetail(recipeId) {
@@ -475,11 +434,9 @@ function openDetail(recipeId) {
   el.detailBody.innerHTML = `
     <img src="${escapeAttribute(recipe.image || createPlaceholderImage(recipe.title))}" alt="${escapeAttribute(recipe.title)}" class="detail-img" />
     <div class="tags">
-      <span class="tag">${escapeHtml(recipe.category)}</span>
-      <span class="tag">Dificultad ${escapeHtml(recipe.difficulty || 'media')}</span>
+      <span class="tag">${escapeHtml(recipe.type)}</span>
+      <span class="tag">${escapeHtml(formatProfile(recipe.profile))}</span>
       ${recipe.prepTime ? `<span class="tag">${recipe.prepTime} min</span>` : ''}
-      ${recipe.occasion ? `<span class="tag">${escapeHtml(recipe.occasion)}</span>` : ''}
-      <span class="tag">${recipe.ingredients.length} ingredientes</span>
     </div>
     <h3>Descripcion</h3>
     <p>${escapeHtml(recipe.notes || 'Sin descripcion adicional.')}</p>
@@ -493,9 +450,7 @@ function openDetail(recipeId) {
 }
 
 function closeDetail() {
-  if (el.detailDialog.open) {
-    el.detailDialog.close();
-  }
+  if (el.detailDialog.open) el.detailDialog.close();
 }
 
 function onGridClick(event) {
@@ -510,12 +465,10 @@ function onGridClick(event) {
     openDetail(recipeId);
     return;
   }
-
   if (button.classList.contains('btn-edit')) {
     openForm(recipeId);
     return;
   }
-
   if (button.classList.contains('btn-delete')) {
     if (!requireAdmin()) return;
     deleteRecipe(recipeId);
@@ -525,35 +478,32 @@ function onGridClick(event) {
 function deleteRecipe(recipeId) {
   const recipe = state.recipes.find((item) => item.id === recipeId);
   if (!recipe) return;
-
   if (!confirm(`Seguro que quieres eliminar "${recipe.title}"?`)) return;
 
   state.recipes = state.recipes.filter((item) => item.id !== recipeId);
   persist();
-  renderCategoryFilter();
+  renderTypeFilter();
   renderRecipes();
   showToast('Receta eliminada');
 }
 
 function clearFilters() {
   state.filters.query = '';
-  state.filters.category = 'all';
-  state.filters.difficulty = 'all';
-  state.filters.maxTime = 'all';
+  state.filters.type = 'all';
+  state.filters.profile = 'all';
+  state.filters.duration = 'all';
   state.filters.sort = 'updated_desc';
 
   el.searchInput.value = '';
-  el.categoryFilter.value = 'all';
-  el.difficultyFilter.value = 'all';
+  el.typeFilter.value = 'all';
+  el.profileFilter.value = 'all';
   el.timeFilter.value = 'all';
   el.sortSelect.value = 'updated_desc';
-
   renderRecipes();
 }
 
 function sortRecipes(recipes, mode) {
   const list = [...recipes];
-
   switch (mode) {
     case 'updated_asc':
       return list.sort((a, b) => dateValue(a.updatedAt) - dateValue(b.updatedAt));
@@ -580,24 +530,6 @@ function dateValue(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function formatUpdated(isoDate) {
-  const ms = dateValue(isoDate);
-  if (!ms) return 'Sin fecha';
-
-  const diffMinutes = Math.round((Date.now() - ms) / 60000);
-  if (diffMinutes < 1) return 'Ahora';
-  if (diffMinutes < 60) return `Hace ${diffMinutes} min`;
-
-  const diffHours = Math.round(diffMinutes / 60);
-  if (diffHours < 24) return `Hace ${diffHours} h`;
-
-  return new Intl.DateTimeFormat('es-ES', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(ms);
-}
-
 function persist() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.recipes));
 }
@@ -606,7 +538,6 @@ function loadRecipes() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return seed();
-
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return seed();
 
@@ -620,12 +551,14 @@ function loadRecipes() {
 }
 
 function normalizeRecipe(item) {
+  const inferredType = safeString(item.type || item.category);
+  const inferredProfile = safeString(item.profile || inferProfileFromLegacy(item));
+
   return {
     id: typeof item.id === 'string' ? item.id : crypto.randomUUID(),
     title: safeString(item.title),
-    category: safeString(item.category),
-    difficulty: normalizeDifficulty(item.difficulty),
-    occasion: safeString(item.occasion),
+    type: inferredType || 'General',
+    profile: normalizeProfile(inferredProfile),
     prepTime: positiveNumberOrNull(item.prepTime),
     image: safeString(item.image),
     ingredients: Array.isArray(item.ingredients) ? item.ingredients.map(safeString).filter(Boolean) : [],
@@ -640,9 +573,8 @@ function seed() {
     {
       id: crypto.randomUUID(),
       title: 'Pasta rapida al ajo y aceite',
-      category: 'Almuerzo',
-      difficulty: 'facil',
-      occasion: 'Diario',
+      type: 'Pasta',
+      profile: 'salado',
       prepTime: 18,
       image: '',
       ingredients: ['200g pasta', '2 dientes de ajo', '3 cdas aceite de oliva', 'Sal y pimienta'],
@@ -653,9 +585,8 @@ function seed() {
     {
       id: crypto.randomUUID(),
       title: 'Bowl mediterraneo',
-      category: 'Cena',
-      difficulty: 'facil',
-      occasion: 'Ligero',
+      type: 'Ensalada',
+      profile: 'salado',
       prepTime: 15,
       image: '',
       ingredients: ['Garbanzos', 'Tomate cherry', 'Pepino', 'Aceitunas', 'Queso feta'],
@@ -671,9 +602,8 @@ function bananaThermomixRecipe() {
   return {
     id: crypto.randomUUID(),
     title: 'Bizcocho de platano en Thermomix (receta definitiva)',
-    category: 'Postres',
-    difficulty: 'media',
-    occasion: 'Especial',
+    type: 'Bizcocho',
+    profile: 'dulce',
     prepTime: 60,
     image: '',
     ingredients: [
@@ -712,11 +642,7 @@ function ensureBaseRecipes(recipes) {
   const hasBanana = list.some(
     (recipe) => safeString(recipe.title).toLowerCase() === 'bizcocho de platano en thermomix (receta definitiva)'
   );
-
-  if (!hasBanana) {
-    list.unshift(bananaThermomixRecipe());
-  }
-
+  if (!hasBanana) list.unshift(bananaThermomixRecipe());
   return list;
 }
 
@@ -728,7 +654,6 @@ function exportRecipes() {
   anchor.download = `recetas-${new Date().toISOString().slice(0, 10)}.json`;
   anchor.click();
   URL.revokeObjectURL(url);
-
   showToast('Exportacion completada');
 }
 
@@ -739,7 +664,6 @@ async function importRecipes(event) {
   try {
     const text = await file.text();
     const parsed = JSON.parse(text);
-
     if (!Array.isArray(parsed)) {
       alert('El archivo no contiene una lista de recetas valida.');
       return;
@@ -748,12 +672,12 @@ async function importRecipes(event) {
     state.recipes = ensureBaseRecipes(
       parsed
         .map(normalizeRecipe)
-        .filter((recipe) => recipe.title && recipe.category)
+        .filter((recipe) => recipe.title && recipe.type)
         .sort((a, b) => dateValue(b.updatedAt) - dateValue(a.updatedAt))
     );
 
     persist();
-    renderCategoryFilter();
+    renderTypeFilter();
     renderRecipes();
     showToast('Importacion completada');
   } catch {
@@ -765,15 +689,11 @@ async function importRecipes(event) {
 
 function showToast(message) {
   if (!el.toast) return;
-
   clearTimeout(toastTimer);
   el.toast.textContent = message;
   el.toast.hidden = false;
 
-  requestAnimationFrame(() => {
-    el.toast.classList.add('show');
-  });
-
+  requestAnimationFrame(() => el.toast.classList.add('show'));
   toastTimer = setTimeout(() => {
     el.toast.classList.remove('show');
     setTimeout(() => {
@@ -825,15 +745,45 @@ function truncate(text, maxLen) {
   return `${clean.slice(0, maxLen - 4)} etc`;
 }
 
-function normalizeDifficulty(value) {
+function normalizeProfile(value) {
   const normalized = safeString(value).toLowerCase();
-  if (normalized === 'facil' || normalized === 'media' || normalized === 'alta') return normalized;
-  return 'media';
+  if (normalized === 'dulce' || normalized === 'salado' || normalized === 'mixto') return normalized;
+  return 'salado';
 }
 
-function formatDifficultyShort(value) {
-  const normalized = normalizeDifficulty(value);
+function formatProfile(value) {
+  const normalized = normalizeProfile(value);
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+function inferProfileFromLegacy(item) {
+  const profile = safeString(item.profile).toLowerCase();
+  if (profile) return profile;
+
+  const difficulty = safeString(item.difficulty).toLowerCase();
+  if (difficulty === 'media') return 'mixto';
+  if (difficulty === 'alta' || difficulty === 'facil') return 'salado';
+
+  const category = safeString(item.category).toLowerCase();
+  if (category.includes('postre') || category.includes('dulce') || category.includes('bizcocho')) return 'dulce';
+  return 'salado';
+}
+
+function matchesDurationFilter(prepTime, mode) {
+  const hasTime = Number.isFinite(prepTime) && prepTime > 0;
+  if (mode === 'all') return true;
+  if (mode === 'unknown') return !hasTime;
+  if (!hasTime) return false;
+  if (mode === 'short') return prepTime <= 20;
+  if (mode === 'medium') return prepTime >= 21 && prepTime <= 45;
+  if (mode === 'long') return prepTime >= 46 && prepTime <= 90;
+  if (mode === 'xlong') return prepTime > 90;
+  return true;
+}
+
+function formatDurationShort(prepTime) {
+  if (!Number.isFinite(prepTime) || prepTime <= 0) return 'Sin tiempo';
+  return `${prepTime} min`;
 }
 
 function escapeHtml(text) {
@@ -848,7 +798,6 @@ function escapeAttribute(text) {
 
 function readFileAsDataUrl(file) {
   if (!file) return Promise.resolve('');
-
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ''));
@@ -873,7 +822,6 @@ function createPlaceholderImage(title) {
       )}</text>
     </svg>
   `;
-
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
@@ -886,7 +834,6 @@ async function sha256(text) {
 
 function debounce(fn, delay) {
   let timer = null;
-
   return (...args) => {
     clearTimeout(timer);
     timer = setTimeout(() => fn(...args), delay);

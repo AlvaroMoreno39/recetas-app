@@ -258,51 +258,32 @@ select:focus {
   padding: 12px 12px 8px;
 }
 
-.badge {
-  margin: 0;
-  display: inline-block;
-  border-radius: 999px;
-  padding: 5px 10px;
-  background: #fde8d6;
-  color: #8c3f1d;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 11px;
-  font-weight: 700;
-}
-
 .title {
-  margin: 10px 0 6px;
+  margin: 4px 0 8px;
   font-size: 1.32rem;
 }
 
-.meta,
 .desc {
   margin: 0;
   color: var(--muted);
   font-size: 14px;
 }
 
-.desc {
-  margin-top: 8px;
-  min-height: 44px;
-}
-
-.card-stats {
+.card-tags {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  margin-top: 10px;
+  margin-bottom: 8px;
 }
 
-.mini-pill {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
+.card-tag {
   padding: 4px 8px;
-  background: var(--soft);
-  color: #5b4f3f;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+}
+
+.desc {
+  margin-top: 0;
+  min-height: 44px;
 }
 
 .card-actions {
