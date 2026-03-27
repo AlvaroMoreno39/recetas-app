@@ -938,7 +938,7 @@ function normalizeText(value) {
 function truncate(text, maxLen) {
   const clean = safeString(text);
   if (clean.length <= maxLen) return clean;
-  return `${clean.slice(0, maxLen - 4)} etc`;
+  return `${clean.slice(0, maxLen - 10)}... ver más`;
 }
 
 function normalizeProfile(value) {
