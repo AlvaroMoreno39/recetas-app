@@ -1,5 +1,6 @@
-const STORAGE_KEY = 'recetas_app_v2';
+﻿const STORAGE_KEY = 'recetas_app_v2';
 const ADMIN_PASSWORD_SHA256 = 'f3f725e47f3efeb1e84c7d1be08f8d2af1e2a86736e75f6fc1444a081680c711';
+const FIELD_ALIASES = { type: 'category', profile: 'difficulty' };
 
 const state = {
   recipes: loadRecipes(),
@@ -7,9 +8,9 @@ const state = {
   isAdmin: false,
   filters: {
     query: '',
-    category: 'all',
-    maxTime: 'all',
-    difficulty: 'all',
+    type: 'all',
+    profile: 'all',
+    duration: 'all',
     sort: 'updated_desc',
   },
 };
@@ -22,9 +23,9 @@ const el = {
   btnExport: document.getElementById('btnExport'),
   importInput: document.getElementById('importInput'),
   searchInput: document.getElementById('searchInput'),
-  categoryFilter: document.getElementById('categoryFilter'),
+  typeFilter: document.getElementById('typeFilter') || document.getElementById('categoryFilter'),
+  profileFilter: document.getElementById('profileFilter') || document.getElementById('difficultyFilter'),
   timeFilter: document.getElementById('timeFilter'),
-  difficultyFilter: document.getElementById('difficultyFilter'),
   sortSelect: document.getElementById('sortSelect'),
   activeFilters: document.getElementById('activeFilters'),
   resultsLabel: document.getElementById('resultsLabel'),
@@ -53,97 +54,113 @@ const el = {
 
 let toastTimer = null;
 
-init();
+try {
+  init();
+} catch (error) {
+  console.error('[recetas-app] init_error', error);
+}
 
 function init() {
   state.isAdmin = false;
 
-  const ensuredRecipes = ensureBaseRecipes(state.recipes);
-  if (ensuredRecipes.length !== state.recipes.length) {
-    state.recipes = ensuredRecipes;
+  const ensured = ensureBaseRecipes(state.recipes);
+  if (ensured.length !== state.recipes.length) {
+    state.recipes = ensured;
     persist();
   }
 
   bindEvents();
   applyAdminState();
-  renderCategoryFilter();
+  renderTypeFilter();
   renderRecipes();
 }
 
 function bindEvents() {
-  el.btnNew.addEventListener('click', () => openForm());
-  el.btnNewEmpty.addEventListener('click', () => openForm());
+  if (el.btnNew) el.btnNew.addEventListener('click', () => openForm());
+  if (el.btnNewEmpty) el.btnNewEmpty.addEventListener('click', () => openForm());
 
   const updateSearch = debounce((value) => {
     state.filters.query = safeString(value);
     renderRecipes();
   }, 140);
 
-  el.searchInput.addEventListener('input', (event) => {
-    updateSearch(event.target.value);
-  });
+  if (el.searchInput) {
+    el.searchInput.addEventListener('input', (event) => updateSearch(event.target.value));
+  }
 
-  el.categoryFilter.addEventListener('change', (event) => {
-    state.filters.category = event.target.value;
-    renderRecipes();
-  });
+  if (el.typeFilter) {
+    el.typeFilter.addEventListener('change', (event) => {
+      state.filters.type = event.target.value;
+      renderRecipes();
+    });
+  }
 
-  el.difficultyFilter.addEventListener('change', (event) => {
-    state.filters.difficulty = event.target.value;
-    renderRecipes();
-  });
+  if (el.profileFilter) {
+    el.profileFilter.addEventListener('change', (event) => {
+      state.filters.profile = event.target.value;
+      renderRecipes();
+    });
+  }
 
-  el.timeFilter.addEventListener('change', (event) => {
-    state.filters.maxTime = event.target.value;
-    renderRecipes();
-  });
+  if (el.timeFilter) {
+    el.timeFilter.addEventListener('change', (event) => {
+      state.filters.duration = event.target.value;
+      renderRecipes();
+    });
+  }
 
-  el.sortSelect.addEventListener('change', (event) => {
-    state.filters.sort = event.target.value;
-    renderRecipes();
-  });
+  if (el.sortSelect) {
+    el.sortSelect.addEventListener('change', (event) => {
+      state.filters.sort = event.target.value;
+      renderRecipes();
+    });
+  }
 
-  el.btnClearFilters.addEventListener('click', clearFilters);
-  el.form.addEventListener('submit', onSubmitForm);
+  if (el.btnClearFilters) el.btnClearFilters.addEventListener('click', clearFilters);
+  if (el.form) el.form.addEventListener('submit', onSubmitForm);
 
   document.querySelectorAll('[data-close-form]').forEach((button) => button.addEventListener('click', closeForm));
   document.querySelectorAll('[data-close-detail]').forEach((button) => button.addEventListener('click', closeDetail));
   document.querySelectorAll('[data-close-admin]').forEach((button) => button.addEventListener('click', closeAdminDialog));
 
-  el.btnExport.addEventListener('click', () => {
-    if (!requireAdmin()) return;
-    exportRecipes();
-  });
+  if (el.btnExport) {
+    el.btnExport.addEventListener('click', () => {
+      if (!requireAdmin()) return;
+      exportRecipes();
+    });
+  }
 
-  el.importInput.addEventListener('change', (event) => {
-    if (!state.isAdmin) {
-      event.target.value = '';
-      showToast('Solo admin puede importar recetas.');
-      return;
-    }
-    importRecipes(event);
-  });
+  if (el.importInput) {
+    el.importInput.addEventListener('change', (event) => {
+      if (!state.isAdmin) {
+        event.target.value = '';
+        showToast('Solo admin puede importar recetas.');
+        return;
+      }
+      importRecipes(event);
+    });
+  }
 
-  el.grid.addEventListener('click', onGridClick);
+  if (el.grid) el.grid.addEventListener('click', onGridClick);
 
-  el.btnAdminOpen.addEventListener('click', openAdminDialog);
-  el.adminLoginForm.addEventListener('submit', onAdminLogin);
-  el.btnAdminLogout.addEventListener('click', adminLogout);
+  if (el.btnAdminOpen) el.btnAdminOpen.addEventListener('click', openAdminDialog);
+  if (el.adminLoginForm) el.adminLoginForm.addEventListener('submit', onAdminLogin);
+  if (el.btnAdminLogout) el.btnAdminLogout.addEventListener('click', adminLogout);
 
-  el.btnTogglePassword.addEventListener('click', () => {
-    const isShowing = el.adminPassword.type === 'text';
-    el.adminPassword.type = isShowing ? 'password' : 'text';
-    el.btnTogglePassword.textContent = isShowing ? 'Mostrar' : 'Ocultar';
-  });
+  if (el.btnTogglePassword) {
+    el.btnTogglePassword.addEventListener('click', () => {
+      const show = el.adminPassword.type === 'password';
+      el.adminPassword.type = show ? 'text' : 'password';
+      el.btnTogglePassword.textContent = show ? 'Ocultar' : 'Mostrar';
+    });
+  }
 
   document.addEventListener('keydown', (event) => {
     if (shouldIgnoreShortcut(event.target)) return;
-
-    if (event.key === '/') {
+    if (event.key === '/' && el.searchInput) {
       event.preventDefault();
       el.searchInput.focus();
     }
-
     if ((event.key === 'n' || event.key === 'N') && state.isAdmin) {
       event.preventDefault();
       openForm();
@@ -153,45 +170,41 @@ function bindEvents() {
 
 function applyAdminState() {
   document.body.classList.toggle('is-admin', state.isAdmin);
-
-  el.adminActions.hidden = !state.isAdmin;
-  el.adminSession.hidden = !state.isAdmin;
-  el.adminLoginForm.hidden = state.isAdmin;
+  if (el.adminActions) el.adminActions.hidden = !state.isAdmin;
+  if (el.adminSession) el.adminSession.hidden = !state.isAdmin;
+  if (el.adminLoginForm) el.adminLoginForm.hidden = state.isAdmin;
 
   if (state.isAdmin) {
-    el.adminHint.textContent = 'Sesion admin activa. Puedes crear, editar, importar y exportar.';
-    el.btnAdminOpen.textContent = 'Panel admin';
-    el.adminStatusChip.textContent = 'Admin activo';
-    el.adminStatusChip.classList.add('is-admin');
+    if (el.adminHint) el.adminHint.textContent = 'Sesion admin activa. Puedes crear, editar, importar y exportar.';
+    if (el.adminStatusChip) {
+      el.adminStatusChip.textContent = 'Admin activo';
+      el.adminStatusChip.classList.add('is-admin');
+    }
   } else {
-    el.adminHint.textContent = 'Acceso privado: inicia sesion para gestionar recetas.';
-    el.btnAdminOpen.textContent = 'Panel admin';
-    el.adminStatusChip.textContent = 'Solo lectura';
-    el.adminStatusChip.classList.remove('is-admin');
+    if (el.adminHint) el.adminHint.textContent = 'Acceso privado: inicia sesion para gestionar recetas.';
+    if (el.adminStatusChip) {
+      el.adminStatusChip.textContent = 'Solo lectura';
+      el.adminStatusChip.classList.remove('is-admin');
+    }
   }
 }
 
 function openAdminDialog() {
-  el.btnAdminOpen.blur();
-  // Reinforce visibility rules every time the modal opens.
-  el.adminActions.hidden = !state.isAdmin;
-  el.adminSession.hidden = !state.isAdmin;
-  el.adminLoginForm.hidden = state.isAdmin;
-  el.adminDialog.showModal();
-  if (!state.isAdmin) {
-    el.adminPassword.focus();
-  }
+  if (el.btnAdminOpen) el.btnAdminOpen.blur();
+  if (el.adminActions) el.adminActions.hidden = !state.isAdmin;
+  if (el.adminSession) el.adminSession.hidden = !state.isAdmin;
+  if (el.adminLoginForm) el.adminLoginForm.hidden = state.isAdmin;
+  showDialog(el.adminDialog);
+  if (!state.isAdmin && el.adminPassword) el.adminPassword.focus();
 }
 
 function closeAdminDialog() {
-  if (el.adminDialog.open) {
-    el.adminDialog.close();
-  }
+  closeDialog(el.adminDialog);
 }
 
 async function onAdminLogin(event) {
   event.preventDefault();
-  const raw = safeString(el.adminPassword.value);
+  const raw = safeString(el.adminPassword?.value);
   if (!raw) {
     showToast('Escribe la contrasena.');
     return;
@@ -204,10 +217,9 @@ async function onAdminLogin(event) {
   }
 
   state.isAdmin = true;
-
-  el.adminPassword.value = '';
-  el.adminPassword.type = 'password';
-  el.btnTogglePassword.textContent = 'Mostrar';
+  if (el.adminPassword) el.adminPassword.value = '';
+  if (el.adminPassword) el.adminPassword.type = 'password';
+  if (el.btnTogglePassword) el.btnTogglePassword.textContent = 'Mostrar';
 
   applyAdminState();
   renderRecipes();
@@ -235,17 +247,15 @@ async function onSubmitForm(event) {
   if (!requireAdmin()) return;
 
   el.formError.textContent = '';
-
   const formData = new FormData(el.form);
-  const uploadedImage = await readFileAsDataUrl(el.imageFile.files[0]);
+  const uploadedImage = await readFileAsDataUrl(el.imageFile?.files?.[0]);
   const existing = state.recipes.find((item) => item.id === state.editingId);
 
   const recipe = {
-    id: state.editingId ?? crypto.randomUUID(),
+    id: state.editingId ?? createId(),
     title: value(formData, 'title'),
-    category: value(formData, 'category'),
-    difficulty: value(formData, 'difficulty') || 'media',
-    occasion: value(formData, 'occasion'),
+    type: value(formData, 'type'),
+    profile: normalizeProfile(value(formData, 'profile') || 'salado'),
     prepTime: positiveNumberOrNull(value(formData, 'prepTime')),
     image: uploadedImage || value(formData, 'image') || existing?.image || '',
     ingredients: toLines(value(formData, 'ingredients')),
@@ -269,57 +279,56 @@ async function onSubmitForm(event) {
   }
 
   persist();
-  renderCategoryFilter();
+  renderTypeFilter();
   renderRecipes();
   closeForm();
 }
 
 function validateRecipe(recipe) {
   if (!recipe.title) return 'El titulo es obligatorio.';
-  if (!recipe.category) return 'La categoria es obligatoria.';
-  if (!recipe.difficulty) return 'La dificultad es obligatoria.';
+  if (!recipe.type) return 'El tipo es obligatorio.';
+  if (!recipe.profile) return 'El sabor es obligatorio.';
   if (recipe.ingredients.length === 0) return 'Agrega al menos 1 ingrediente.';
   if (recipe.steps.length === 0) return 'Agrega al menos 1 paso.';
   return '';
 }
 
 function getProcessedRecipes() {
-  const queryTokens = normalizeText(state.filters.query).split(' ').filter(Boolean);
+  const tokens = normalizeText(state.filters.query).split(' ').filter(Boolean);
 
   const filtered = state.recipes.filter((recipe) => {
-    const matchesCategory = state.filters.category === 'all' || recipe.category === state.filters.category;
-    const matchesDifficulty = state.filters.difficulty === 'all' || recipe.difficulty === state.filters.difficulty;
-
-    const maxTime = Number(state.filters.maxTime);
-    const matchesTime =
-      state.filters.maxTime === 'all' || (Number.isFinite(recipe.prepTime) && recipe.prepTime > 0 && recipe.prepTime <= maxTime);
+    const matchesType = state.filters.type === 'all' || recipe.type === state.filters.type;
+    const matchesProfile = state.filters.profile === 'all' || recipe.profile === state.filters.profile;
+    const matchesDuration = matchesDurationFilter(recipe.prepTime, state.filters.duration);
 
     const haystack = normalizeText([
       recipe.title,
-      recipe.category,
+      recipe.type,
+      recipe.profile,
       recipe.notes,
       recipe.ingredients.join(' '),
       recipe.steps.join(' '),
     ].join(' '));
 
-    const matchesQuery = queryTokens.every((token) => haystack.includes(token));
-
-    return matchesCategory && matchesDifficulty && matchesTime && matchesQuery;
+    const matchesQuery = tokens.every((token) => haystack.includes(token));
+    return matchesType && matchesProfile && matchesDuration && matchesQuery;
   });
 
   return sortRecipes(filtered, state.filters.sort);
 }
 
 function renderRecipes() {
+  if (!el.grid) return;
   const list = getProcessedRecipes();
   const fragment = document.createDocumentFragment();
 
   animateGridRefresh();
   el.grid.innerHTML = '';
-  el.empty.hidden = list.length > 0;
+  if (el.empty) el.empty.hidden = list.length > 0;
 
   list.forEach((recipe, index) => {
-    const node = el.cardTpl.content.firstElementChild.cloneNode(true);
+    const node = createCardNode();
+    if (!node) return;
     node.dataset.id = recipe.id;
     node.style.animationDelay = `${Math.min(index * 35, 220)}ms`;
 
@@ -327,19 +336,11 @@ function renderRecipes() {
     thumb.src = recipe.image || createPlaceholderImage(recipe.title);
     thumb.alt = recipe.title;
 
-    node.querySelector('.badge').textContent = recipe.category;
     node.querySelector('.title').textContent = recipe.title;
-
-    const meta = [
-      recipe.prepTime ? `${recipe.prepTime} min` : 'Tiempo no indicado',
-      recipe.occasion ? recipe.occasion : 'Sin momento',
-      formatUpdated(recipe.updatedAt),
-    ].join(' Â· ');
-
-    node.querySelector('.meta').textContent = meta;
+    node.querySelector('.tag-type').textContent = recipe.type;
+    node.querySelector('.tag-profile').textContent = formatProfile(recipe.profile);
+    node.querySelector('.tag-duration').textContent = formatDurationShort(recipe.prepTime);
     node.querySelector('.desc').textContent = buildCardDescription(recipe);
-    node.querySelector('.stat-ingredients').textContent = `${recipe.ingredients.length} ingredientes`;
-    node.querySelector('.stat-difficulty').textContent = formatDifficultyShort(recipe.difficulty);
 
     node.querySelectorAll('.admin-only').forEach((adminNode) => {
       adminNode.hidden = !state.isAdmin;
@@ -349,15 +350,12 @@ function renderRecipes() {
   });
 
   el.grid.append(fragment);
-
   updateStatus(list.length);
   renderActiveFilters();
 }
 
 function animateGridRefresh() {
   el.grid.classList.remove('grid-refresh');
-  // Force reflow so the animation can restart on each render.
-  // eslint-disable-next-line no-unused-expressions
   el.grid.offsetHeight;
   el.grid.classList.add('grid-refresh');
 }
@@ -365,24 +363,21 @@ function animateGridRefresh() {
 function buildCardDescription(recipe) {
   const description = safeString(recipe.notes);
   if (description) return truncate(description, 110);
-
   const firstStep = safeString(recipe.steps[0]);
   if (firstStep) return truncate(firstStep, 110);
-
   return truncate(recipe.ingredients.slice(0, 3).join(', '), 110) || 'Sin descripcion';
 }
 
 function renderActiveFilters() {
+  if (!el.activeFilters) return;
   const chips = [];
-
   if (state.filters.query) chips.push(`Busqueda: ${state.filters.query}`);
-  if (state.filters.category !== 'all') chips.push(`Categoria: ${state.filters.category}`);
-  if (state.filters.difficulty !== 'all') chips.push(`Dificultad: ${state.filters.difficulty}`);
-  if (state.filters.maxTime !== 'all') chips.push(`Tiempo <= ${state.filters.maxTime} min`);
-  if (state.filters.sort !== 'updated_desc') chips.push(`Orden: ${el.sortSelect.selectedOptions[0].textContent}`);
+  if (state.filters.type !== 'all') chips.push(`Tipo: ${state.filters.type}`);
+  if (state.filters.profile !== 'all') chips.push(`Sabor: ${formatProfile(state.filters.profile)}`);
+  if (state.filters.duration !== 'all' && el.timeFilter) chips.push(`Duracion: ${el.timeFilter.selectedOptions[0].textContent}`);
+  if (state.filters.sort !== 'updated_desc' && el.sortSelect) chips.push(`Orden: ${el.sortSelect.selectedOptions[0].textContent}`);
 
   el.activeFilters.innerHTML = '';
-
   chips.forEach((chip) => {
     const span = document.createElement('span');
     span.className = 'filter-chip';
@@ -392,39 +387,44 @@ function renderActiveFilters() {
 }
 
 function updateStatus(count) {
-  el.resultsLabel.textContent = `${count} ${count === 1 ? 'receta' : 'recetas'}`;
-  el.btnClearFilters.hidden = !hasActiveFilters();
+  if (el.resultsLabel) {
+    el.resultsLabel.textContent = `${count} ${count === 1 ? 'receta' : 'recetas'}`;
+  }
+  if (el.btnClearFilters) {
+    el.btnClearFilters.hidden = !hasActiveFilters();
+  }
 }
 
 function hasActiveFilters() {
   return (
     Boolean(state.filters.query) ||
-    state.filters.category !== 'all' ||
-    state.filters.difficulty !== 'all' ||
-    state.filters.maxTime !== 'all' ||
+    state.filters.type !== 'all' ||
+    state.filters.profile !== 'all' ||
+    state.filters.duration !== 'all' ||
     state.filters.sort !== 'updated_desc'
   );
 }
 
-function renderCategoryFilter() {
-  const categories = [...new Set(state.recipes.map((item) => item.category))].sort((a, b) =>
+function renderTypeFilter() {
+  if (!el.typeFilter) return;
+
+  const types = [...new Set(state.recipes.map((item) => item.type))].sort((a, b) =>
     a.localeCompare(b, 'es', { sensitivity: 'base' })
   );
 
-  el.categoryFilter.innerHTML = '<option value="all">Todas</option>';
-
-  categories.forEach((category) => {
+  el.typeFilter.innerHTML = '<option value="all">Todas</option>';
+  types.forEach((type) => {
     const option = document.createElement('option');
-    option.value = category;
-    option.textContent = category;
-    el.categoryFilter.append(option);
+    option.value = type;
+    option.textContent = type;
+    el.typeFilter.append(option);
   });
 
-  if (![...el.categoryFilter.options].some((opt) => opt.value === state.filters.category)) {
-    state.filters.category = 'all';
+  if (![...el.typeFilter.options].some((opt) => opt.value === state.filters.type)) {
+    state.filters.type = 'all';
   }
 
-  el.categoryFilter.value = state.filters.category;
+  el.typeFilter.value = state.filters.type;
 }
 
 function openForm(recipeId = null) {
@@ -433,7 +433,7 @@ function openForm(recipeId = null) {
   state.editingId = recipeId;
   el.formError.textContent = '';
   el.form.reset();
-  el.imageFile.value = '';
+  if (el.imageFile) el.imageFile.value = '';
 
   if (recipeId) {
     const recipe = state.recipes.find((item) => item.id === recipeId);
@@ -441,9 +441,8 @@ function openForm(recipeId = null) {
 
     el.formHeading.textContent = 'Editar receta';
     setFormValue('title', recipe.title);
-    setFormValue('category', recipe.category);
-    setFormValue('difficulty', recipe.difficulty || 'media');
-    setFormValue('occasion', recipe.occasion || '');
+    setFormValue('type', recipe.type);
+    setFormValue('profile', recipe.profile || 'salado');
     setFormValue('prepTime', recipe.prepTime);
     setFormValue('image', recipe.image && recipe.image.startsWith('http') ? recipe.image : '');
     setFormValue('ingredients', recipe.ingredients.join('\n'));
@@ -453,14 +452,12 @@ function openForm(recipeId = null) {
     el.formHeading.textContent = 'Nueva receta';
   }
 
-  el.formDialog.showModal();
+  showDialog(el.formDialog);
 }
 
 function closeForm() {
   state.editingId = null;
-  if (el.formDialog.open) {
-    el.formDialog.close();
-  }
+  closeDialog(el.formDialog);
 }
 
 function openDetail(recipeId) {
@@ -475,11 +472,9 @@ function openDetail(recipeId) {
   el.detailBody.innerHTML = `
     <img src="${escapeAttribute(recipe.image || createPlaceholderImage(recipe.title))}" alt="${escapeAttribute(recipe.title)}" class="detail-img" />
     <div class="tags">
-      <span class="tag">${escapeHtml(recipe.category)}</span>
-      <span class="tag">Dificultad ${escapeHtml(recipe.difficulty || 'media')}</span>
+      <span class="tag">${escapeHtml(recipe.type)}</span>
+      <span class="tag">${escapeHtml(formatProfile(recipe.profile))}</span>
       ${recipe.prepTime ? `<span class="tag">${recipe.prepTime} min</span>` : ''}
-      ${recipe.occasion ? `<span class="tag">${escapeHtml(recipe.occasion)}</span>` : ''}
-      <span class="tag">${recipe.ingredients.length} ingredientes</span>
     </div>
     <h3>Descripcion</h3>
     <p>${escapeHtml(recipe.notes || 'Sin descripcion adicional.')}</p>
@@ -489,13 +484,11 @@ function openDetail(recipeId) {
     <ol class="list">${steps}</ol>
   `;
 
-  el.detailDialog.showModal();
+  showDialog(el.detailDialog);
 }
 
 function closeDetail() {
-  if (el.detailDialog.open) {
-    el.detailDialog.close();
-  }
+  closeDialog(el.detailDialog);
 }
 
 function onGridClick(event) {
@@ -510,12 +503,10 @@ function onGridClick(event) {
     openDetail(recipeId);
     return;
   }
-
   if (button.classList.contains('btn-edit')) {
     openForm(recipeId);
     return;
   }
-
   if (button.classList.contains('btn-delete')) {
     if (!requireAdmin()) return;
     deleteRecipe(recipeId);
@@ -525,35 +516,33 @@ function onGridClick(event) {
 function deleteRecipe(recipeId) {
   const recipe = state.recipes.find((item) => item.id === recipeId);
   if (!recipe) return;
-
   if (!confirm(`Seguro que quieres eliminar "${recipe.title}"?`)) return;
 
   state.recipes = state.recipes.filter((item) => item.id !== recipeId);
   persist();
-  renderCategoryFilter();
+  renderTypeFilter();
   renderRecipes();
   showToast('Receta eliminada');
 }
 
 function clearFilters() {
   state.filters.query = '';
-  state.filters.category = 'all';
-  state.filters.difficulty = 'all';
-  state.filters.maxTime = 'all';
+  state.filters.type = 'all';
+  state.filters.profile = 'all';
+  state.filters.duration = 'all';
   state.filters.sort = 'updated_desc';
 
-  el.searchInput.value = '';
-  el.categoryFilter.value = 'all';
-  el.difficultyFilter.value = 'all';
-  el.timeFilter.value = 'all';
-  el.sortSelect.value = 'updated_desc';
+  if (el.searchInput) el.searchInput.value = '';
+  if (el.typeFilter) el.typeFilter.value = 'all';
+  if (el.profileFilter) el.profileFilter.value = 'all';
+  if (el.timeFilter) el.timeFilter.value = 'all';
+  if (el.sortSelect) el.sortSelect.value = 'updated_desc';
 
   renderRecipes();
 }
 
 function sortRecipes(recipes, mode) {
   const list = [...recipes];
-
   switch (mode) {
     case 'updated_asc':
       return list.sort((a, b) => dateValue(a.updatedAt) - dateValue(b.updatedAt));
@@ -580,24 +569,6 @@ function dateValue(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function formatUpdated(isoDate) {
-  const ms = dateValue(isoDate);
-  if (!ms) return 'Sin fecha';
-
-  const diffMinutes = Math.round((Date.now() - ms) / 60000);
-  if (diffMinutes < 1) return 'Ahora';
-  if (diffMinutes < 60) return `Hace ${diffMinutes} min`;
-
-  const diffHours = Math.round(diffMinutes / 60);
-  if (diffHours < 24) return `Hace ${diffHours} h`;
-
-  return new Intl.DateTimeFormat('es-ES', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(ms);
-}
-
 function persist() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.recipes));
 }
@@ -606,7 +577,6 @@ function loadRecipes() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return seed();
-
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return seed();
 
@@ -620,12 +590,14 @@ function loadRecipes() {
 }
 
 function normalizeRecipe(item) {
+  const inferredType = safeString(item.type || item.category);
+  const inferredProfile = safeString(item.profile || inferProfileFromLegacy(item));
+
   return {
-    id: typeof item.id === 'string' ? item.id : crypto.randomUUID(),
+    id: typeof item.id === 'string' ? item.id : createId(),
     title: safeString(item.title),
-    category: safeString(item.category),
-    difficulty: normalizeDifficulty(item.difficulty),
-    occasion: safeString(item.occasion),
+    type: inferredType || 'General',
+    profile: normalizeProfile(inferredProfile),
     prepTime: positiveNumberOrNull(item.prepTime),
     image: safeString(item.image),
     ingredients: Array.isArray(item.ingredients) ? item.ingredients.map(safeString).filter(Boolean) : [],
@@ -638,11 +610,10 @@ function normalizeRecipe(item) {
 function seed() {
   return [
     {
-      id: crypto.randomUUID(),
+      id: createId(),
       title: 'Pasta rapida al ajo y aceite',
-      category: 'Almuerzo',
-      difficulty: 'facil',
-      occasion: 'Diario',
+      type: 'Pasta',
+      profile: 'salado',
       prepTime: 18,
       image: '',
       ingredients: ['200g pasta', '2 dientes de ajo', '3 cdas aceite de oliva', 'Sal y pimienta'],
@@ -651,11 +622,10 @@ function seed() {
       updatedAt: new Date().toISOString(),
     },
     {
-      id: crypto.randomUUID(),
+      id: createId(),
       title: 'Bowl mediterraneo',
-      category: 'Cena',
-      difficulty: 'facil',
-      occasion: 'Ligero',
+      type: 'Ensalada',
+      profile: 'salado',
       prepTime: 15,
       image: '',
       ingredients: ['Garbanzos', 'Tomate cherry', 'Pepino', 'Aceitunas', 'Queso feta'],
@@ -669,11 +639,10 @@ function seed() {
 
 function bananaThermomixRecipe() {
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
     title: 'Bizcocho de platano en Thermomix (receta definitiva)',
-    category: 'Postres',
-    difficulty: 'media',
-    occasion: 'Especial',
+    type: 'Bizcocho',
+    profile: 'dulce',
     prepTime: 60,
     image: '',
     ingredients: [
@@ -712,11 +681,7 @@ function ensureBaseRecipes(recipes) {
   const hasBanana = list.some(
     (recipe) => safeString(recipe.title).toLowerCase() === 'bizcocho de platano en thermomix (receta definitiva)'
   );
-
-  if (!hasBanana) {
-    list.unshift(bananaThermomixRecipe());
-  }
-
+  if (!hasBanana) list.unshift(bananaThermomixRecipe());
   return list;
 }
 
@@ -728,7 +693,6 @@ function exportRecipes() {
   anchor.download = `recetas-${new Date().toISOString().slice(0, 10)}.json`;
   anchor.click();
   URL.revokeObjectURL(url);
-
   showToast('Exportacion completada');
 }
 
@@ -739,7 +703,6 @@ async function importRecipes(event) {
   try {
     const text = await file.text();
     const parsed = JSON.parse(text);
-
     if (!Array.isArray(parsed)) {
       alert('El archivo no contiene una lista de recetas valida.');
       return;
@@ -748,12 +711,12 @@ async function importRecipes(event) {
     state.recipes = ensureBaseRecipes(
       parsed
         .map(normalizeRecipe)
-        .filter((recipe) => recipe.title && recipe.category)
+        .filter((recipe) => recipe.title && recipe.type)
         .sort((a, b) => dateValue(b.updatedAt) - dateValue(a.updatedAt))
     );
 
     persist();
-    renderCategoryFilter();
+    renderTypeFilter();
     renderRecipes();
     showToast('Importacion completada');
   } catch {
@@ -765,15 +728,11 @@ async function importRecipes(event) {
 
 function showToast(message) {
   if (!el.toast) return;
-
   clearTimeout(toastTimer);
   el.toast.textContent = message;
   el.toast.hidden = false;
 
-  requestAnimationFrame(() => {
-    el.toast.classList.add('show');
-  });
-
+  requestAnimationFrame(() => el.toast.classList.add('show'));
   toastTimer = setTimeout(() => {
     el.toast.classList.remove('show');
     setTimeout(() => {
@@ -788,12 +747,22 @@ function shouldIgnoreShortcut(target) {
   return tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable;
 }
 
+function resolveFieldName(name) {
+  if (el.form?.elements?.[name]) return name;
+  const alias = FIELD_ALIASES[name];
+  if (alias && el.form?.elements?.[alias]) return alias;
+  return name;
+}
+
 function setFormValue(name, value) {
-  el.form.elements[name].value = value ?? '';
+  const resolved = resolveFieldName(name);
+  if (!el.form?.elements?.[resolved]) return;
+  el.form.elements[resolved].value = value ?? '';
 }
 
 function value(formData, key) {
-  return safeString(formData.get(key));
+  const resolved = resolveFieldName(key);
+  return safeString(formData.get(resolved));
 }
 
 function safeString(value) {
@@ -825,15 +794,48 @@ function truncate(text, maxLen) {
   return `${clean.slice(0, maxLen - 4)} etc`;
 }
 
-function normalizeDifficulty(value) {
+function normalizeProfile(value) {
   const normalized = safeString(value).toLowerCase();
-  if (normalized === 'facil' || normalized === 'media' || normalized === 'alta') return normalized;
-  return 'media';
+  if (normalized === 'facil') return 'salado';
+  if (normalized === 'media') return 'mixto';
+  if (normalized === 'alta') return 'salado';
+  if (normalized === 'dulce' || normalized === 'salado' || normalized === 'mixto') return normalized;
+  return 'salado';
 }
 
-function formatDifficultyShort(value) {
-  const normalized = normalizeDifficulty(value);
+function formatProfile(value) {
+  const normalized = normalizeProfile(value);
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+function inferProfileFromLegacy(item) {
+  const profile = safeString(item.profile).toLowerCase();
+  if (profile) return profile;
+
+  const difficulty = safeString(item.difficulty).toLowerCase();
+  if (difficulty === 'media') return 'mixto';
+  if (difficulty === 'alta' || difficulty === 'facil') return 'salado';
+
+  const category = safeString(item.category).toLowerCase();
+  if (category.includes('postre') || category.includes('dulce') || category.includes('bizcocho')) return 'dulce';
+  return 'salado';
+}
+
+function matchesDurationFilter(prepTime, mode) {
+  const hasTime = Number.isFinite(prepTime) && prepTime > 0;
+  if (mode === 'all') return true;
+  if (mode === 'unknown') return !hasTime;
+  if (!hasTime) return false;
+  if (mode === 'short') return prepTime <= 20;
+  if (mode === 'medium') return prepTime >= 21 && prepTime <= 45;
+  if (mode === 'long') return prepTime >= 46 && prepTime <= 90;
+  if (mode === 'xlong') return prepTime > 90;
+  return true;
+}
+
+function formatDurationShort(prepTime) {
+  if (!Number.isFinite(prepTime) || prepTime <= 0) return 'Sin tiempo';
+  return `${prepTime} min`;
 }
 
 function escapeHtml(text) {
@@ -848,7 +850,6 @@ function escapeAttribute(text) {
 
 function readFileAsDataUrl(file) {
   if (!file) return Promise.resolve('');
-
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ''));
@@ -873,11 +874,11 @@ function createPlaceholderImage(title) {
       )}</text>
     </svg>
   `;
-
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
 async function sha256(text) {
+  if (!window.crypto?.subtle) return '';
   const encoded = new TextEncoder().encode(text);
   const digest = await crypto.subtle.digest('SHA-256', encoded);
   const digestArray = Array.from(new Uint8Array(digest));
@@ -886,9 +887,63 @@ async function sha256(text) {
 
 function debounce(fn, delay) {
   let timer = null;
-
   return (...args) => {
     clearTimeout(timer);
     timer = setTimeout(() => fn(...args), delay);
   };
+}
+
+function createId() {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  const pattern = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+  return pattern.replace(/[xy]/g, (char) => {
+    const rnd = Math.floor(Math.random() * 16);
+    const val = char === 'x' ? rnd : (rnd & 0x3) | 0x8;
+    return val.toString(16);
+  });
+}
+
+function showDialog(dialog) {
+  if (!dialog) return;
+  if (typeof dialog.showModal === 'function') {
+    dialog.showModal();
+    return;
+  }
+  dialog.setAttribute('open', 'open');
+}
+
+function closeDialog(dialog) {
+  if (!dialog) return;
+  if (typeof dialog.close === 'function' && dialog.open) {
+    dialog.close();
+    return;
+  }
+  dialog.removeAttribute('open');
+}
+
+function createCardNode() {
+  if (el.cardTpl?.content?.firstElementChild) {
+    return el.cardTpl.content.firstElementChild.cloneNode(true);
+  }
+
+  const wrapper = document.createElement('article');
+  wrapper.className = 'card reveal-up';
+  wrapper.innerHTML = `
+    <div class="thumb-wrap"><img class="thumb" alt="Imagen de receta" loading="lazy" decoding="async" /></div>
+    <div class="card-body">
+      <h3 class="title"></h3>
+      <div class="card-tags">
+        <span class="tag card-tag tag-type"></span>
+        <span class="tag card-tag tag-profile"></span>
+        <span class="tag card-tag tag-duration"></span>
+      </div>
+      <p class="desc"></p>
+    </div>
+    <footer class="card-actions">
+      <button type="button" class="btn btn-soft btn-view">Ver</button>
+      <button type="button" class="btn btn-soft btn-edit admin-only">Editar</button>
+      <button type="button" class="btn btn-danger btn-delete admin-only">Eliminar</button>
+    </footer>
+  `;
+  return wrapper;
 }

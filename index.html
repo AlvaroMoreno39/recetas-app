@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="assets/css/style.css?v=20260327a" />
   </head>
   <body>
     <div class="app-bg" aria-hidden="true"></div>
@@ -20,11 +20,11 @@
         <div class="brand">
           <p class="kicker">Recetario personal</p>
           <h1>Mis recetas</h1>
-          <p class="subtitle">Todo ordenado, bonito y privado para administrar sin exponer controles al publico.</p>
+          <p class="subtitle">Recetas claras, rapidas de encontrar y con gestion privada para admin.</p>
         </div>
 
         <div class="topbar-actions">
-          <span id="adminStatusChip" class="admin-chip" aria-live="polite">Modo publico</span>
+          <span id="adminStatusChip" class="admin-chip" aria-live="polite">Solo lectura</span>
           <button id="btnAdminOpen" class="btn btn-soft" type="button">Panel admin</button>
         </div>
       </header>
@@ -32,36 +32,36 @@
       <section class="search-panel" aria-label="Busqueda y filtros">
         <label class="search-field">
           <span>Buscar receta</span>
-          <input id="searchInput" type="search" placeholder="Titulo, ingrediente, categoria o preparacion" />
+          <input id="searchInput" type="search" placeholder="Titulo, ingrediente, tipo, sabor o preparacion" />
         </label>
 
         <div class="filters-row">
           <label>
-            <span>Categoria</span>
-            <select id="categoryFilter">
+            <span>Tipo</span>
+            <select id="typeFilter">
               <option value="all">Todas</option>
             </select>
           </label>
 
           <label>
-            <span>Tiempo maximo</span>
+            <span>Duracion</span>
             <select id="timeFilter">
-              <option value="all">Sin limite</option>
-              <option value="15">15 min</option>
-              <option value="30">30 min</option>
-              <option value="45">45 min</option>
-              <option value="60">60 min</option>
-              <option value="90">90 min</option>
+              <option value="all">Cualquiera</option>
+              <option value="short">Rapida (0-20 min)</option>
+              <option value="medium">Media (21-45 min)</option>
+              <option value="long">Larga (46-90 min)</option>
+              <option value="xlong">Muy larga (+90 min)</option>
+              <option value="unknown">Sin tiempo</option>
             </select>
           </label>
 
           <label>
-            <span>Dificultad</span>
-            <select id="difficultyFilter">
+            <span>Sabor</span>
+            <select id="profileFilter">
               <option value="all">Todas</option>
-              <option value="facil">Facil</option>
-              <option value="media">Media</option>
-              <option value="alta">Alta</option>
+              <option value="dulce">Dulce</option>
+              <option value="salado">Salado</option>
+              <option value="mixto">Mixto</option>
             </select>
           </label>
 
@@ -145,22 +145,17 @@
           </label>
 
           <label>
-            Categoria *
-            <input name="category" required maxlength="40" />
+            Tipo *
+            <input name="type" required maxlength="40" placeholder="Ensalada, pasta, bizcocho..." />
           </label>
 
           <label>
-            Dificultad *
-            <select name="difficulty" required>
-              <option value="facil">Facil</option>
-              <option value="media" selected>Media</option>
-              <option value="alta">Alta</option>
+            Sabor *
+            <select name="profile" required>
+              <option value="salado" selected>Salado</option>
+              <option value="dulce">Dulce</option>
+              <option value="mixto">Mixto</option>
             </select>
-          </label>
-
-          <label>
-            Momento
-            <input name="occasion" maxlength="40" placeholder="Diario, especial, finde..." />
           </label>
 
           <label>
@@ -223,14 +218,13 @@
       <article class="card reveal-up">
         <div class="thumb-wrap"><img class="thumb" alt="Imagen de receta" loading="lazy" decoding="async" /></div>
         <div class="card-body">
-          <p class="badge"></p>
           <h3 class="title"></h3>
-          <p class="meta"></p>
-          <p class="desc"></p>
-          <div class="card-stats">
-            <span class="mini-pill stat-ingredients"></span>
-            <span class="mini-pill stat-difficulty"></span>
+          <div class="card-tags">
+            <span class="tag card-tag tag-type"></span>
+            <span class="tag card-tag tag-profile"></span>
+            <span class="tag card-tag tag-duration"></span>
           </div>
+          <p class="desc"></p>
         </div>
 
         <footer class="card-actions">
@@ -243,6 +237,6 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-    <script src="assets/js/app.js" defer></script>
+    <script src="assets/js/app.js?v=20260327a" defer></script>
   </body>
 </html>
