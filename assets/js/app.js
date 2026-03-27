@@ -255,8 +255,19 @@ async function onSubmitForm(event) {
   const existing = state.recipes.find((item) => item.id === state.editingId);
 
   const typedImageUrl = value(formData, 'image');
-  const imageCandidate = uploadedImage || typedImageUrl || existing?.image || '';
-  const normalizedImage = normalizeImageUrl(imageCandidate);
+
+  const normalizedImage = (() => {
+    if (uploadedImage) return normalizeImageUrl(uploadedImage);
+    if (typedImageUrl) return normalizeImageUrl(typedImageUrl);
+
+    if (state.editingId) {
+      const hadHttpImage = Boolean(existing?.image && /^https?:\/\//i.test(existing.image));
+      if (hadHttpImage) return '';
+      return normalizeImageUrl(existing?.image || '');
+    }
+
+    return '';
+  })();
 
   if (!uploadedImage && typedImageUrl && !normalizedImage) {
     showToast('Ese enlace no es imagen directa. Usa URL directa .jpg/.png o sube archivo.');
