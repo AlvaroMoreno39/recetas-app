@@ -626,10 +626,12 @@ function loadRecipes() {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return seed();
 
-    return parsed
+    const normalized = parsed
       .filter((item) => item && typeof item === 'object')
       .map(normalizeRecipe)
       .sort((a, b) => dateValue(b.updatedAt) - dateValue(a.updatedAt));
+
+    return normalized.length > 0 ? normalized : seed();
   } catch {
     return seed();
   }
