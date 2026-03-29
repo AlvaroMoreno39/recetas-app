@@ -178,20 +178,14 @@ function applyAdminState() {
   if (el.adminSession) el.adminSession.hidden = !state.isAdmin;
   if (el.adminLoginForm) el.adminLoginForm.hidden = state.isAdmin;
 
-  const syncLabel = isBackendConfigured()
-    ? state.backendOnline
-      ? 'Nube conectada'
-      : 'Nube no disponible (guardado local)'
-    : 'Sin backend (guardado local)';
-
   if (state.isAdmin) {
-    if (el.adminHint) el.adminHint.textContent = `Sesion admin activa. Puedes crear, editar, importar y exportar. ${syncLabel}.`;
+    if (el.adminHint) el.adminHint.textContent = 'Sesion activa. Puedes crear, editar, importar y exportar recetas.';
     if (el.adminStatusChip) {
       el.adminStatusChip.textContent = 'Admin activo';
       el.adminStatusChip.classList.add('is-admin');
     }
   } else {
-    if (el.adminHint) el.adminHint.textContent = `Acceso privado: inicia sesion para gestionar recetas. ${syncLabel}.`;
+    if (el.adminHint) el.adminHint.textContent = 'Acceso privado: inicia sesion para gestionar recetas.';
     if (el.adminStatusChip) {
       el.adminStatusChip.textContent = 'Solo lectura';
       el.adminStatusChip.classList.remove('is-admin');
