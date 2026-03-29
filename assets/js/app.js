@@ -515,20 +515,31 @@ function openDetail(recipeId) {
   const steps = recipe.steps.map((item) => `<li>${escapeHtml(item)}</li>`).join('');
 
   el.detailBody.innerHTML = `
-    <img src="${escapeAttribute(recipe.image || createPlaceholderImage(recipe.title))}" alt="${escapeAttribute(
-      recipe.title
-    )}" class="detail-img" />
-    <div class="tags">
-      <span class="tag">${escapeHtml(recipe.type)}</span>
-      <span class="tag">${escapeHtml(formatProfile(recipe.profile))}</span>
-      ${recipe.prepTime ? `<span class="tag">${recipe.prepTime} min</span>` : ''}
-    </div>
-    <h3>Descripcion</h3>
-    <p>${escapeHtml(recipe.notes || 'Sin descripcion adicional.')}</p>
-    <h3>Ingredientes</h3>
-    <ul class="list">${ingredients}</ul>
-    <h3>Pasos</h3>
-    <ol class="list">${steps}</ol>
+    <section class="detail-hero">
+      <img src="${escapeAttribute(recipe.image || createPlaceholderImage(recipe.title))}" alt="${escapeAttribute(
+        recipe.title
+      )}" class="detail-img" />
+      <div class="detail-meta">
+        <span class="detail-pill">${escapeHtml(recipe.type)}</span>
+        <span class="detail-pill">${escapeHtml(formatProfile(recipe.profile))}</span>
+        <span class="detail-pill">${recipe.prepTime ? `${recipe.prepTime} min` : 'Sin tiempo'}</span>
+      </div>
+    </section>
+
+    <section class="detail-section">
+      <h3>Descripcion</h3>
+      <p class="detail-text">${escapeHtml(recipe.notes || 'Sin descripcion adicional.')}</p>
+    </section>
+
+    <section class="detail-section">
+      <h3>Ingredientes</h3>
+      <ul class="list detail-list">${ingredients}</ul>
+    </section>
+
+    <section class="detail-section">
+      <h3>Pasos</h3>
+      <ol class="list detail-list">${steps}</ol>
+    </section>
   `;
 
   const detailImg = el.detailBody.querySelector('.detail-img');
