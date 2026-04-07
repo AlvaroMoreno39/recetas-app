@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/style.css?v=20260329f" />
+    <link rel="stylesheet" href="assets/css/style.css?v=20260407c" />
   </head>
   <body>
     <div class="app-bg" aria-hidden="true"></div>
@@ -23,10 +23,6 @@
           <p class="subtitle">Recetas claras, rapidas de encontrar y listas para cocinar sin complicaciones.</p>
         </div>
 
-        <div class="topbar-actions">
-          <span id="adminStatusChip" class="admin-chip" aria-live="polite">Solo lectura</span>
-          <button id="btnAdminOpen" class="btn btn-soft" type="button">Acceso privado</button>
-        </div>
       </header>
 
       <section class="search-panel" aria-label="Busqueda y filtros">
@@ -79,13 +75,6 @@
         </div>
 
         <div id="activeFilters" class="active-filters" aria-live="polite"></div>
-
-        <section id="adminActions" class="admin-toolbar admin-only" hidden>
-          <button id="btnNew" class="btn btn-primary" type="button">+ Nueva receta</button>
-          <button id="btnExport" class="btn btn-soft" type="button">Exportar JSON</button>
-          <label class="btn btn-soft file-btn" for="importInput">Importar JSON</label>
-          <input id="importInput" type="file" accept="application/json" hidden />
-        </section>
       </section>
 
       <section class="status-row" aria-live="polite">
@@ -99,7 +88,6 @@
         <section id="empty" class="empty" hidden>
           <h2>No hay recetas para mostrar</h2>
           <p>Ajusta los filtros o prueba otra busqueda para encontrar recetas.</p>
-          <button id="btnNewEmpty" class="btn btn-primary admin-only" type="button">Crear receta</button>
         </section>
       </main>
 
@@ -108,101 +96,6 @@
         <p>Copyright © 2026. Todos los derechos reservados.</p>
       </footer>
     </div>
-
-    <dialog id="adminDialog" class="dialog dialog-admin">
-      <article class="panel">
-        <header class="panel-head">
-          <h2>Zona privada</h2>
-          <button class="btn btn-soft icon-btn" type="button" data-close-admin aria-label="Cerrar">×</button>
-        </header>
-
-        <p id="adminHint" class="admin-hint">Acceso privado: inicia sesion para gestionar recetas.</p>
-
-        <form id="adminLoginForm" class="admin-login" autocomplete="off">
-          <label class="full">
-            Contrasena admin
-            <div class="inline-field">
-              <input id="adminPassword" name="adminPassword" type="password" minlength="10" required />
-              <button id="btnTogglePassword" class="btn btn-soft" type="button">Mostrar</button>
-            </div>
-          </label>
-
-          <button class="btn btn-primary admin-submit" type="submit">Acceder</button>
-        </form>
-
-        <section id="adminSession" class="admin-actions" hidden>
-          <button id="btnAdminLogout" class="btn btn-danger admin-logout" type="button">Cerrar sesion</button>
-        </section>
-      </article>
-    </dialog>
-
-    <dialog id="formDialog" class="dialog">
-      <form id="recipeForm" class="panel" method="dialog" novalidate>
-        <header class="panel-head">
-          <h2 id="formHeading">Nueva receta</h2>
-          <button class="btn btn-soft icon-btn" type="button" data-close-form aria-label="Cerrar">×</button>
-        </header>
-
-        <div class="form-grid">
-          <label>
-            Titulo *
-            <input name="title" required maxlength="80" />
-          </label>
-
-          <label>
-            Tipo *
-            <input name="type" required maxlength="40" placeholder="Ensalada, pasta, bizcocho..." />
-          </label>
-
-          <label>
-            Sabor *
-            <select name="profile" required>
-              <option value="salado" selected>Salado</option>
-              <option value="dulce">Dulce</option>
-              <option value="mixto">Mixto</option>
-            </select>
-          </label>
-
-          <label>
-            Tiempo (min)
-            <input name="prepTime" type="number" min="1" />
-          </label>
-
-          <label class="full">
-            Imagen por URL (opcional)
-            <input name="image" type="url" placeholder="https://..." />
-          </label>
-
-          <label class="full">
-            O subir imagen (opcional)
-            <input id="imageFile" type="file" accept="image/*" />
-          </label>
-
-          <label class="full">
-            Ingredientes (uno por linea) *
-            <textarea name="ingredients" rows="5" required></textarea>
-          </label>
-
-          <label class="full">
-            Pasos (uno por linea) *
-            <textarea name="steps" rows="5" required></textarea>
-          </label>
-
-          <label class="full">
-            Descripcion / notas
-            <textarea name="notes" rows="4"></textarea>
-          </label>
-        </div>
-
-        <footer class="panel-foot">
-          <p id="formError" class="error" aria-live="assertive"></p>
-          <div class="row">
-            <button class="btn btn-soft" type="button" data-close-form>Cancelar</button>
-            <button class="btn btn-primary" type="submit">Guardar receta</button>
-          </div>
-        </footer>
-      </form>
-    </dialog>
 
     <dialog id="detailDialog" class="dialog">
       <article class="panel panel-detail">
@@ -234,16 +127,11 @@
 
         <footer class="card-actions">
           <button type="button" class="btn btn-soft btn-view">Ver</button>
-          <button type="button" class="btn btn-soft btn-edit admin-only">Editar</button>
-          <button type="button" class="btn btn-danger btn-delete admin-only">Eliminar</button>
         </footer>
       </article>
     </template>
 
-    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-
-    <script src="assets/js/backend.config.js?v=20260329f" defer></script>
-    <script src="assets/js/app.js?v=20260329f" defer></script>
+    <script src="assets/js/app.js?v=20260407c" defer></script>
   </body>
 </html>
 
