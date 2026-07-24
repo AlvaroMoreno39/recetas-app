@@ -7,6 +7,7 @@ const state = {
     type: 'all',
     profile: 'all',
     duration: 'all',
+    difficulty: 'all',
     sort: 'updated_desc',
   },
 };
@@ -18,6 +19,7 @@ const el = {
   typeFilter: document.getElementById('typeFilter'),
   profileFilter: document.getElementById('profileFilter'),
   timeFilter: document.getElementById('timeFilter'),
+  difficultyFilter: document.getElementById('difficultyFilter'),
   sortSelect: document.getElementById('sortSelect'),
   activeFilters: document.getElementById('activeFilters'),
   resultsLabel: document.getElementById('resultsLabel'),
@@ -62,6 +64,13 @@ function bindEvents() {
     });
   }
 
+  if (el.timeFilter) {
+    el.timeFilter.addEventListener('change', (event) => {
+      state.filters.duration = event.target.value;
+      renderRecipes();
+    });
+  }
+
   if (el.profileFilter) {
     el.profileFilter.addEventListener('change', (event) => {
       state.filters.profile = event.target.value;
@@ -69,9 +78,9 @@ function bindEvents() {
     });
   }
 
-  if (el.timeFilter) {
-    el.timeFilter.addEventListener('change', (event) => {
-      state.filters.duration = event.target.value;
+  if (el.difficultyFilter) {
+    el.difficultyFilter.addEventListener('change', (event) => {
+      state.filters.difficulty = event.target.value;
       renderRecipes();
     });
   }
@@ -127,18 +136,38 @@ async function loadRecipes() {
 function normalizeRecipe(item) {
   const inferredType = safeString(item.type || item.category);
   const inferredProfile = safeString(item.profile || inferProfileFromLegacy(item));
+  const inferredDifficulty = safeString(item.difficulty || inferDifficultyFromLegacy(item));
+  const variants = Array.isArray(item.variants) ? item.variants.map(normalizeVariant).filter(Boolean) : [];
 
   return {
     id: typeof item.id === 'string' ? item.id : createId(),
     title: safeString(item.title),
     type: inferredType || 'General',
     profile: normalizeProfile(inferredProfile),
+    difficulty: normalizeDifficulty(inferredDifficulty),
     prepTime: positiveNumberOrNull(item.prepTime),
     image: normalizeImageUrl(item.image),
     ingredients: Array.isArray(item.ingredients) ? item.ingredients.map(safeString).filter(Boolean) : [],
     steps: Array.isArray(item.steps) ? item.steps.map(safeString).filter(Boolean) : [],
     notes: safeString(item.notes),
+    variants,
     updatedAt: safeString(item.updatedAt) || new Date().toISOString(),
+  };
+}
+
+function normalizeVariant(item) {
+  if (!item || typeof item !== 'object') return null;
+
+  return {
+    id: typeof item.id === 'string' ? item.id : createId(),
+    label: safeString(item.label) || 'Version',
+    title: safeString(item.title),
+    difficulty: normalizeDifficulty(item.difficulty),
+    prepTime: positiveNumberOrNull(item.prepTime),
+    summary: safeString(item.summary),
+    learns: Array.isArray(item.learns) ? item.learns.map(safeString).filter(Boolean) : [],
+    ingredients: Array.isArray(item.ingredients) ? item.ingredients.map(safeString).filter(Boolean) : [],
+    steps: Array.isArray(item.steps) ? item.steps.map(safeString).filter(Boolean) : [],
   };
 }
 
@@ -146,18 +175,31 @@ function getProcessedRecipes() {
   const tokens = normalizeText(state.filters.query).split(' ').filter(Boolean);
 
   const filtered = state.recipes.filter((recipe) => {
+    const detailSets = getRecipeDetailSets(recipe);
     const matchesType = state.filters.type === 'all' || recipe.type === state.filters.type;
+    const matchesDuration =
+      state.filters.duration === 'all' ||
+      detailSets.some((detail) => matchesDurationFilter(detail.prepTime, state.filters.duration));
     const matchesProfile = state.filters.profile === 'all' || recipe.profile === state.filters.profile;
-    const matchesDuration = matchesDurationFilter(recipe.prepTime, state.filters.duration);
+    const matchesDifficulty =
+      state.filters.difficulty === 'all' ||
+      detailSets.some((detail) => normalizeDifficulty(detail.difficulty) === state.filters.difficulty);
 
     const haystack = normalizeText(
-      [recipe.title, recipe.type, recipe.profile, recipe.notes, recipe.ingredients.join(' '), recipe.steps.join(' ')].join(
-        ' '
-      )
+      [
+        recipe.title,
+        recipe.type,
+        recipe.profile,
+        recipe.difficulty,
+        recipe.notes,
+        recipe.ingredients.join(' '),
+        recipe.steps.join(' '),
+        recipe.variants.map((variant) => [variant.label, variant.title, variant.summary, variant.learns.join(' '), variant.ingredients.join(' '), variant.steps.join(' ')].join(' ')).join(' '),
+      ].join(' ')
     );
 
     const matchesQuery = tokens.every((token) => haystack.includes(token));
-    return matchesType && matchesProfile && matchesDuration && matchesQuery;
+    return matchesType && matchesDuration && matchesProfile && matchesDifficulty && matchesQuery;
   });
 
   return sortRecipes(filtered, state.filters.sort);
@@ -174,6 +216,8 @@ function renderRecipes() {
   if (el.empty) el.empty.hidden = list.length > 0;
 
   list.forEach((recipe, index) => {
+    const primaryDetail = getPrimaryDetail(recipe);
+    const isProgressiveRecipe = Array.isArray(recipe.variants) && recipe.variants.length > 0;
     const node = createCardNode();
     if (!node) return;
 
@@ -199,13 +243,16 @@ function renderRecipes() {
     if (title) title.textContent = recipe.title;
 
     const tagType = node.querySelector('.tag-type');
-    if (tagType) tagType.textContent = recipe.type;
-
-    const tagProfile = node.querySelector('.tag-profile');
-    if (tagProfile) tagProfile.textContent = formatProfile(recipe.profile);
+    setTagContent(tagType, recipe.type);
 
     const tagDuration = node.querySelector('.tag-duration');
-    if (tagDuration) tagDuration.textContent = formatDurationShort(recipe.prepTime);
+    setTagContent(tagDuration, isProgressiveRecipe ? '' : formatDurationBand(primaryDetail.prepTime));
+
+    const tagProfile = node.querySelector('.tag-profile');
+    setTagContent(tagProfile, formatProfile(recipe.profile));
+
+    const tagDifficulty = node.querySelector('.tag-difficulty');
+    setTagContent(tagDifficulty, isProgressiveRecipe ? '' : formatDifficulty(primaryDetail.difficulty || recipe.difficulty));
 
     const desc = node.querySelector('.desc');
     if (desc) desc.textContent = buildCardDescription(recipe);
@@ -244,6 +291,9 @@ function renderActiveFilters() {
   if (state.filters.type !== 'all') chips.push(state.filters.type);
   if (state.filters.duration !== 'all' && el.timeFilter) chips.push(el.timeFilter.selectedOptions[0].textContent);
   if (state.filters.profile !== 'all') chips.push(formatProfile(state.filters.profile));
+  if (state.filters.difficulty !== 'all' && el.difficultyFilter) {
+    chips.push(el.difficultyFilter.selectedOptions[0].textContent);
+  }
   if (state.filters.sort !== 'updated_desc' && el.sortSelect) chips.push(el.sortSelect.selectedOptions[0].textContent);
 
   el.activeFilters.innerHTML = '';
@@ -269,8 +319,9 @@ function hasActiveFilters() {
   return (
     Boolean(state.filters.query) ||
     state.filters.type !== 'all' ||
-    state.filters.profile !== 'all' ||
     state.filters.duration !== 'all' ||
+    state.filters.profile !== 'all' ||
+    state.filters.difficulty !== 'all' ||
     state.filters.sort !== 'updated_desc'
   );
 }
@@ -283,6 +334,9 @@ function animateGridRefresh() {
 }
 
 function buildCardDescription(recipe) {
+  if (Array.isArray(recipe.variants) && recipe.variants.length > 0) {
+    return truncate(recipe.notes || `Incluye ${recipe.variants.length} versiones para avanzar paso a paso.`, 110);
+  }
   const description = safeString(recipe.notes);
   if (description) return truncate(description, 110);
 
@@ -299,9 +353,47 @@ function openDetail(recipeId) {
   if (!recipe) return;
 
   el.detailTitle.textContent = recipe.title;
+  renderRecipeDetail(recipe, 0);
 
-  const ingredients = recipe.ingredients.map((item) => `<li>${escapeHtml(item)}</li>`).join('');
-  const steps = recipe.steps.map((item) => `<li>${escapeHtml(item)}</li>`).join('');
+  showDialog(el.detailDialog);
+}
+
+function renderRecipeDetail(recipe, variantIndex) {
+  if (!el.detailBody) return;
+
+  const variants = recipe.variants;
+  const selectedVariant = variants[variantIndex] || null;
+  const detail = selectedVariant || getPrimaryDetail(recipe);
+  const ingredients = getDetailIngredients(recipe, selectedVariant).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
+  const steps = getDetailSteps(recipe, selectedVariant).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
+  const learns = selectedVariant?.learns?.length
+    ? `
+      <section class="detail-section">
+        <h3>Que se aprende</h3>
+        <ul class="list detail-list">${selectedVariant.learns.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
+      </section>
+    `
+    : '';
+  const variantSelector =
+    variants.length > 0
+      ? `
+        <section class="variant-switcher" aria-label="Versiones de la receta">
+          ${variants
+            .map(
+              (variant, index) => `
+                <button
+                  type="button"
+                  class="btn ${index === variantIndex ? 'btn-primary' : 'btn-soft'} variant-btn"
+                  data-variant-index="${index}"
+                >
+                  ${escapeHtml(variant.label)}
+                </button>
+              `
+            )
+            .join('')}
+        </section>
+      `
+      : '';
 
   el.detailBody.innerHTML = `
     <section class="detail-hero">
@@ -310,15 +402,20 @@ function openDetail(recipeId) {
       )}" class="detail-img" />
       <div class="detail-meta">
         <span class="detail-pill">${escapeHtml(recipe.type)}</span>
+        <span class="detail-pill">${escapeHtml(formatDurationBand(detail.prepTime))}</span>
         <span class="detail-pill">${escapeHtml(formatProfile(recipe.profile))}</span>
-        <span class="detail-pill">${recipe.prepTime ? `${recipe.prepTime} min` : 'Sin tiempo'}</span>
+        <span class="detail-pill">${escapeHtml(formatDifficulty(detail.difficulty || recipe.difficulty))}</span>
       </div>
     </section>
 
+    ${variantSelector}
+
     <section class="detail-section">
-      <h3>Descripcion</h3>
-      <p class="detail-text">${escapeHtml(recipe.notes || 'Sin descripcion adicional.')}</p>
+      <h3>${escapeHtml(selectedVariant?.title || 'Descripcion')}</h3>
+      <p class="detail-text">${escapeHtml(selectedVariant?.summary || recipe.notes || 'Sin descripcion adicional.')}</p>
     </section>
+
+    ${learns}
 
     <section class="detail-section">
       <h3>Ingredientes</h3>
@@ -343,7 +440,11 @@ function openDetail(recipeId) {
     );
   }
 
-  showDialog(el.detailDialog);
+  el.detailBody.querySelectorAll('[data-variant-index]').forEach((button) => {
+    button.addEventListener('click', () => {
+      renderRecipeDetail(recipe, Number(button.dataset.variantIndex || 0));
+    });
+  });
 }
 
 function closeDetail() {
@@ -366,17 +467,42 @@ function onGridClick(event) {
 function clearFilters() {
   state.filters.query = '';
   state.filters.type = 'all';
-  state.filters.profile = 'all';
   state.filters.duration = 'all';
+  state.filters.profile = 'all';
+  state.filters.difficulty = 'all';
   state.filters.sort = 'updated_desc';
 
   if (el.searchInput) el.searchInput.value = '';
   if (el.typeFilter) el.typeFilter.value = 'all';
-  if (el.profileFilter) el.profileFilter.value = 'all';
   if (el.timeFilter) el.timeFilter.value = 'all';
+  if (el.profileFilter) el.profileFilter.value = 'all';
+  if (el.difficultyFilter) el.difficultyFilter.value = 'all';
   if (el.sortSelect) el.sortSelect.value = 'updated_desc';
 
   renderRecipes();
+}
+
+function getPrimaryDetail(recipe) {
+  return Array.isArray(recipe.variants) ? recipe.variants[0] || recipe : recipe;
+}
+
+function getRecipeDetailSets(recipe) {
+  return Array.isArray(recipe.variants) && recipe.variants.length > 0 ? recipe.variants : [recipe];
+}
+
+function getDetailIngredients(recipe, variant) {
+  return variant?.ingredients?.length ? variant.ingredients : recipe.ingredients;
+}
+
+function getDetailSteps(recipe, variant) {
+  return variant?.steps?.length ? variant.steps : recipe.steps;
+}
+
+function setTagContent(element, value) {
+  if (!element) return;
+  const content = safeString(value);
+  element.hidden = !content;
+  element.textContent = content;
 }
 
 function sortRecipes(recipes, mode) {
@@ -427,7 +553,7 @@ function normalizeText(value) {
 function truncate(text, maxLen) {
   const clean = safeString(text);
   if (clean.length <= maxLen) return clean;
-  return `${clean.slice(0, maxLen - 10)}... ver más`;
+  return `${clean.slice(0, maxLen - 3).trim()}...`;
 }
 
 function normalizeProfile(value) {
@@ -453,21 +579,47 @@ function inferProfileFromLegacy(item) {
   return 'salado';
 }
 
+function normalizeDifficulty(value) {
+  const normalized = safeString(value).toLowerCase();
+  if (normalized === 'baja' || normalized === 'media' || normalized === 'alta') return normalized;
+  return 'media';
+}
+
+function formatDifficulty(value) {
+  const normalized = normalizeDifficulty(value);
+  if (normalized === 'baja') return 'Sencilla';
+  if (normalized === 'media') return 'Tecnica';
+  if (normalized === 'alta') return 'Experta';
+  return 'Tecnica';
+}
+
+function inferDifficultyFromLegacy(item) {
+  const difficulty = safeString(item.difficulty).toLowerCase();
+  if (difficulty) return difficulty;
+
+  const prepTime = positiveNumberOrNull(item.prepTime);
+  if (!prepTime) return 'media';
+  if (prepTime <= 30) return 'baja';
+  if (prepTime <= 60) return 'media';
+  return 'alta';
+}
+
 function matchesDurationFilter(prepTime, mode) {
   const hasTime = Number.isFinite(prepTime) && prepTime > 0;
   if (mode === 'all') return true;
   if (mode === 'unknown') return !hasTime;
   if (!hasTime) return false;
-  if (mode === 'short') return prepTime <= 20;
-  if (mode === 'medium') return prepTime >= 21 && prepTime <= 45;
-  if (mode === 'long') return prepTime >= 46 && prepTime <= 90;
-  if (mode === 'xlong') return prepTime > 90;
+  if (mode === 'short') return prepTime <= 30;
+  if (mode === 'medium') return prepTime >= 31 && prepTime <= 60;
+  if (mode === 'long') return prepTime > 60;
   return true;
 }
 
-function formatDurationShort(prepTime) {
-  if (!Number.isFinite(prepTime) || prepTime <= 0) return 'Sin tiempo';
-  return `${prepTime} min`;
+function formatDurationBand(prepTime) {
+  if (!Number.isFinite(prepTime) || prepTime <= 0) return 'Sin definir';
+  if (prepTime <= 30) return 'Rapida';
+  if (prepTime <= 60) return 'Media';
+  return 'Lenta';
 }
 
 function normalizeImageUrl(raw) {
@@ -586,8 +738,9 @@ function createCardNode() {
       <h3 class="title"></h3>
       <div class="card-tags">
         <span class="tag card-tag tag-type"></span>
-        <span class="tag card-tag tag-profile"></span>
         <span class="tag card-tag tag-duration"></span>
+        <span class="tag card-tag tag-profile"></span>
+        <span class="tag card-tag tag-difficulty"></span>
       </div>
       <p class="desc"></p>
     </div>
@@ -603,9 +756,10 @@ function seed() {
   return [
     {
       id: 'seed-banana-thermomix',
-      title: 'Bizcocho de platano en Thermomix (receta definitiva)',
+      title: 'Bizcocho de platano perfecto (Thermomix)',
       type: 'Bizcocho',
       profile: 'dulce',
+      difficulty: 'media',
       prepTime: 50,
       image: 'assets/images/recipes/bizcocho-platanothermomix.jpg',
       ingredients: [
@@ -635,13 +789,15 @@ function seed() {
         'Conservacion: envolver en film y guardar a temperatura ambiente (2-3 dias).',
       ],
       notes: 'Bizcocho jugoso y aromatico para aprovechar platanos maduros.',
+      variants: [],
       updatedAt: '2026-04-07T00:00:00.000Z',
     },
     {
       id: 'seed-apple-thermomix',
-      title: 'Bizcocho de manzana perfecto (Thermomix)',
+      title: 'Bizcocho de manzana (Thermomix)',
       type: 'Bizcocho',
       profile: 'dulce',
+      difficulty: 'media',
       prepTime: 55,
       image: 'assets/images/recipes/bizcocho-manzana-thermomix.jpg',
       ingredients: [
@@ -669,7 +825,90 @@ function seed() {
       ],
       notes:
         'Trucos clave: no sobrebatir la harina, manzana en dados pequenos, 2 manzanas para jugosidad y canela + vainilla para sabor.',
+      variants: [],
       updatedAt: '2026-04-07T00:00:00.000Z',
+    },
+    {
+      id: 'seed-focaccia-progresion',
+      title: 'Focaccia artesanal',
+      type: 'Pan',
+      profile: 'salado',
+      difficulty: 'baja',
+      prepTime: 300,
+      image: 'https://www.elinasaiach.com/wp-content/uploads/2023/06/Focaccia-de-Verano_2.jpeg',
+      ingredients: [],
+      steps: [],
+      notes: 'Una sola receta con progresion por niveles para aprender pliegues, fermentacion y estructura de la masa.',
+      variants: [
+        {
+          id: 'focaccia-nivel-1',
+          label: 'Nivel 1',
+          title: 'Focaccia clasica',
+          difficulty: 'baja',
+          prepTime: 300,
+          summary:
+            'La receta ideal para empezar en panaderia artesanal. Trabajaras una masa hidratada con pliegues y tendras una focaccia esponjosa por dentro y crujiente por fuera en el mismo dia.',
+          learns: ['Masa hidratada', 'Pliegues basicos', 'Focaccia lista en el dia'],
+          ingredients: [
+            '500 g harina de fuerza (W250-W300)',
+            '365 g agua templada',
+            '5,5 g levadura seca de panaderia',
+            '10 g sal',
+            '20 g aceite de oliva virgen extra',
+            'Para la bandeja: 3-4 cucharadas de aceite de oliva virgen extra',
+            'Toppings: sal gruesa o en escamas, romero, tomates cherry (opcional) y un chorrito de aceite',
+          ],
+          steps: [
+            'Mezcla harina y levadura. Anade agua, sal y aceite hasta que no quede harina seca. No amases: la masa debe quedar pegajosa.',
+            'Deja reposar 15 minutos.',
+            'Haz una vuelta de pliegues desde los cuatro lados.',
+            'Reposa 20 minutos.',
+            'Repite una segunda ronda de pliegues.',
+            'Reposa otros 20 minutos.',
+            'Haz la tercera y ultima ronda de pliegues.',
+            'Fermenta tapada hasta que aumente claramente de volumen: 1 h 30 min en verano o unas 2 h en invierno.',
+            'Aceita generosamente la bandeja, pasa la masa con cuidado y estirala suave. Si se encoge, espera 10 minutos.',
+            'Deja una segunda fermentacion de 30 minutos.',
+            'Anade aceite por encima, marca los hoyuelos con los dedos y reparte sal, romero y cherry si quieres.',
+            'Hornea a 220C, calor arriba y abajo, durante 20-25 minutos.',
+          ],
+        },
+        {
+          id: 'focaccia-nivel-2',
+          label: 'Nivel 2',
+          title: 'Focaccia de fermentacion lenta',
+          difficulty: 'media',
+          prepTime: 1440,
+          summary:
+            'La evolucion natural de la focaccia clasica. La fermentacion en frio desarrolla mas sabor, una miga mas ligera y una textura todavia mas aireada.',
+          learns: ['Fermentacion en frio', 'Mas sabor', 'Mejor estructura de masa'],
+          ingredients: [
+            '500 g harina de fuerza (W300)',
+            '365 g agua templada',
+            '5,5 g levadura seca',
+            '10 g sal',
+            '20 g aceite de oliva',
+            'Para la bandeja: 3-4 cucharadas de aceite',
+            'Toppings: sal gruesa, romero, tomates cherry, cebolla caramelizada (opcional) y aceite de oliva',
+          ],
+          steps: [
+            'Mezcla la masa igual que en el nivel 1 y deja reposar 15 minutos.',
+            'Haz el primer pliegue y reposa 20 minutos.',
+            'Haz el segundo pliegue y reposa 20 minutos.',
+            'Haz el tercer pliegue y deja 30-40 minutos a temperatura ambiente.',
+            'Guarda la masa tapada en la nevera durante unas 20 horas.',
+            'Saca la masa y atemperala 45-60 minutos.',
+            'Aceita bien la bandeja, pasa la masa y estirala con suavidad.',
+            'Deja una segunda fermentacion de 30 minutos.',
+            'Anade aceite, haz los hoyuelos y reparte sal, romero, cherry y cebolla caramelizada si te apetece.',
+            'Hornea a 220C, calor arriba y abajo, durante 20-25 minutos.',
+          ],
+        },
+      ],
+      updatedAt: '2026-07-24T00:00:00.000Z',
     },
   ];
 }
+
+
+

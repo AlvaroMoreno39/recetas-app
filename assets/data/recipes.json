@@ -1,9 +1,10 @@
 [
   {
     "id": "seed-banana-thermomix",
-    "title": "Bizcocho de platano en Thermomix (receta definitiva)",
+    "title": "Bizcocho de platano perfecto (Thermomix)",
     "type": "Bizcocho",
     "profile": "dulce",
+    "difficulty": "media",
     "prepTime": 50,
     "image": "assets/images/recipes/bizcocho-platanothermomix.jpg",
     "ingredients": [
@@ -37,9 +38,10 @@
   },
   {
     "id": "seed-apple-thermomix",
-    "title": "Bizcocho de manzana perfecto (Thermomix)",
+    "title": "Bizcocho de manzana (Thermomix)",
     "type": "Bizcocho",
     "profile": "dulce",
+    "difficulty": "media",
     "prepTime": 55,
     "image": "assets/images/recipes/bizcocho-manzana-thermomix.jpg",
     "ingredients": [
@@ -67,5 +69,91 @@
     ],
     "notes": "Trucos clave: no sobrebatir la harina, manzana en dados pequenos, 2 manzanas para jugosidad y canela + vainilla para sabor.",
     "updatedAt": "2026-04-07T00:00:00.000Z"
+  },
+  {
+    "id": "focaccia-artesanal",
+    "title": "Focaccia artesanal",
+    "type": "Pan",
+    "profile": "salado",
+    "difficulty": "baja",
+    "prepTime": 300,
+    "image": "https://www.elinasaiach.com/wp-content/uploads/2023/06/Focaccia-de-Verano_2.jpeg",`r`n    "ingredients": [],`r`n    "steps": [],`r`n    "notes": "Receta progresiva de focaccia con dos niveles para aprender pliegues, fermentacion y mejor estructura de masa sin llenar la web de varias cards parecidas.",
+    "variants": [
+      {
+        "id": "focaccia-nivel-1",
+        "label": "Nivel 1",
+        "title": "Focaccia clasica",
+        "difficulty": "baja",
+        "prepTime": 300,
+        "summary": "La receta perfecta para iniciarte en panaderia artesanal. Aprenderas a trabajar una masa hidratada mediante pliegues y conseguiras una focaccia esponjosa por dentro y crujiente por fuera, lista en el mismo dia.",
+        "learns": [
+          "Trabajar una masa hidratada",
+          "Hacer pliegues basicos",
+          "Dominar la focaccia del mismo dia"
+        ],
+        "ingredients": [
+          "500 g harina de fuerza (W250-W300)",
+          "365 g agua templada",
+          "5,5 g levadura seca de panaderia",
+          "10 g sal",
+          "20 g aceite de oliva virgen extra",
+          "Para la bandeja: 3-4 cucharadas de aceite de oliva virgen extra",
+          "Toppings: sal gruesa o en escamas, romero, tomates cherry (opcional) y aceite de oliva virgen extra"
+        ],
+        "steps": [
+          "Mezcla en un bol grande la harina con la levadura.",
+          "Anade agua, sal y aceite. Mezcla hasta que desaparezca toda la harina seca. No amases: la masa debe quedar muy pegajosa.",
+          "Deja reposar 15 minutos.",
+          "Haz una vuelta de pliegues desde los cuatro lados.",
+          "Reposa 20 minutos.",
+          "Haz una segunda ronda de pliegues.",
+          "Reposa otros 20 minutos.",
+          "Haz la tercera y ultima ronda de pliegues.",
+          "Deja fermentar tapada hasta que aumente claramente de volumen: unas 1 h 30 min en verano o cerca de 2 h en invierno.",
+          "Unta generosamente la bandeja con aceite, pasa la masa con cuidado y estirala con suavidad. Si se encoge, espera 10 minutos.",
+          "Haz una segunda fermentacion de 30 minutos.",
+          "Anade aceite por encima, marca los hoyuelos con los dedos y reparte sal, romero y tomates cherry si quieres.",
+          "Hornea a 220C, calor arriba y abajo, durante 20-25 minutos."
+        ]
+      },
+      {
+        "id": "focaccia-nivel-2",
+        "label": "Nivel 2",
+        "title": "Focaccia de fermentacion lenta",
+        "difficulty": "media",
+        "prepTime": 1440,
+        "summary": "La evolucion natural de la focaccia clasica. Introduce una fermentacion en frio de unas 20 horas para desarrollar mas sabor, una miga mas ligera y una textura todavia mas aireada.",
+        "learns": [
+          "Fermentacion en frio",
+          "Desarrollo del sabor",
+          "Mejor estructura y elasticidad"
+        ],
+        "ingredients": [
+          "500 g harina de fuerza (W300)",
+          "365 g agua templada",
+          "5,5 g levadura seca de panaderia",
+          "10 g sal",
+          "20 g aceite de oliva",
+          "Para la bandeja: 3-4 cucharadas de aceite",
+          "Toppings: sal gruesa, romero, tomates cherry, cebolla caramelizada (opcional) y aceite de oliva"
+        ],
+        "steps": [
+          "Prepara la mezcla igual que en el nivel 1 y deja reposar 15 minutos.",
+          "Haz el primer pliegue y deja reposar 20 minutos.",
+          "Haz el segundo pliegue y deja reposar otros 20 minutos.",
+          "Haz el tercer pliegue y deja 30-40 minutos a temperatura ambiente.",
+          "Guarda la masa tapada en la nevera durante unas 20 horas.",
+          "Saca la masa y dejala atemperar 45-60 minutos.",
+          "Aceita bien la bandeja, pasa la masa y estirala con suavidad.",
+          "Deja una segunda fermentacion de 30 minutos.",
+          "Anade aceite, haz los hoyuelos con los dedos y reparte sal, romero, cherry y cebolla caramelizada si te apetece.",
+          "Hornea a 220C, calor arriba y abajo, durante 20-25 minutos."
+        ]
+      }
+    ],
+    "updatedAt": "2026-07-24T00:00:00.000Z"
   }
 ]
+
+
+

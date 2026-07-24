@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/style.css?v=20260407c" />
+    <link rel="stylesheet" href="assets/css/style.css?v=20260724a" />
   </head>
   <body>
     <div class="app-bg" aria-hidden="true"></div>
@@ -28,7 +28,7 @@
       <section class="search-panel" aria-label="Busqueda y filtros">
         <label class="search-field">
           <span>Buscar receta</span>
-          <input id="searchInput" type="search" placeholder="Titulo, ingrediente, tipo, sabor o preparacion" />
+          <input id="searchInput" type="search" placeholder="Titulo, ingrediente, tipo, sabor, dificultad o preparacion" />
         </label>
 
         <div class="filters-row">
@@ -43,11 +43,10 @@
             <span>Duracion</span>
             <select id="timeFilter">
               <option value="all">Cualquiera</option>
-              <option value="short">Rapida (0-20 min)</option>
-              <option value="medium">Media (21-45 min)</option>
-              <option value="long">Larga (46-90 min)</option>
-              <option value="xlong">Muy larga (+90 min)</option>
-              <option value="unknown">Sin tiempo</option>
+              <option value="short">Rapida</option>
+              <option value="medium">Media</option>
+              <option value="long">Lenta</option>
+              <option value="unknown">Sin definir</option>
             </select>
           </label>
 
@@ -62,14 +61,24 @@
           </label>
 
           <label>
+            <span>Dificultad</span>
+            <select id="difficultyFilter">
+              <option value="all">Todas</option>
+              <option value="baja">Sencilla</option>
+              <option value="media">Tecnica</option>
+              <option value="alta">Experta</option>
+            </select>
+          </label>
+
+          <label>
             <span>Ordenar por</span>
             <select id="sortSelect">
               <option value="updated_desc">Mas recientes</option>
               <option value="updated_asc">Mas antiguas</option>
               <option value="title_asc">Nombre A-Z</option>
               <option value="title_desc">Nombre Z-A</option>
-              <option value="prep_asc">Tiempo menor</option>
-              <option value="prep_desc">Tiempo mayor</option>
+              <option value="prep_asc">Menos tiempo</option>
+              <option value="prep_desc">Mas tiempo</option>
             </select>
           </label>
         </div>
@@ -119,8 +128,9 @@
           <h3 class="title"></h3>
           <div class="card-tags">
             <span class="tag card-tag tag-type"></span>
-            <span class="tag card-tag tag-profile"></span>
             <span class="tag card-tag tag-duration"></span>
+            <span class="tag card-tag tag-profile"></span>
+            <span class="tag card-tag tag-difficulty"></span>
           </div>
           <p class="desc"></p>
         </div>
@@ -131,7 +141,7 @@
       </article>
     </template>
 
-    <script src="assets/js/app.js?v=20260407c" defer></script>
+    <script src="assets/js/app.js?v=20260724a" defer></script>
   </body>
 </html>
 
