@@ -361,7 +361,7 @@ function openDetail(recipeId) {
 function renderRecipeDetail(recipe, variantIndex) {
   if (!el.detailBody) return;
 
-  const variants = recipe.variants;
+  const variants = Array.isArray(recipe.variants) ? recipe.variants : [];
   const selectedVariant = variants[variantIndex] || null;
   const detail = selectedVariant || getPrimaryDetail(recipe);
   const ingredients = getDetailIngredients(recipe, selectedVariant).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
@@ -711,9 +711,11 @@ function showDialog(dialog) {
   if (!dialog) return;
   if (typeof dialog.showModal === 'function') {
     dialog.showModal();
+    clearDialogFocus();
     return;
   }
   dialog.setAttribute('open', 'open');
+  clearDialogFocus();
 }
 
 function closeDialog(dialog) {
@@ -723,6 +725,15 @@ function closeDialog(dialog) {
     return;
   }
   dialog.removeAttribute('open');
+}
+
+function clearDialogFocus() {
+  requestAnimationFrame(() => {
+    const active = document.activeElement;
+    if (active && typeof active.blur === 'function') {
+      active.blur();
+    }
+  });
 }
 
 function createCardNode() {
@@ -799,7 +810,7 @@ function seed() {
       profile: 'dulce',
       difficulty: 'media',
       prepTime: 55,
-      image: 'assets/images/recipes/bizcocho-manzana-thermomix.jpg',
+      image: 'assets/images/recipes/bizcocho-manzana.jpg',
       ingredients: [
         '3 huevos',
         '150 g azucar',
@@ -835,7 +846,7 @@ function seed() {
       profile: 'salado',
       difficulty: 'baja',
       prepTime: 300,
-      image: 'https://www.elinasaiach.com/wp-content/uploads/2023/06/Focaccia-de-Verano_2.jpeg',
+      image: 'assets/images/recipes/focaccia-artesanal.jpg',
       ingredients: [],
       steps: [],
       notes: 'Una sola receta con progresion por niveles para aprender pliegues, fermentacion y estructura de la masa.',
@@ -856,7 +867,7 @@ function seed() {
             '10 g sal',
             '20 g aceite de oliva virgen extra',
             'Para la bandeja: 3-4 cucharadas de aceite de oliva virgen extra',
-            'Toppings: sal gruesa o en escamas, romero, tomates cherry (opcional) y un chorrito de aceite',
+            'Toppings: sal gruesa o en escamas, romero, el topping que tu quieras (por ejemplo tomates cherry) y un chorrito de aceite',
           ],
           steps: [
             'Mezcla harina y levadura. Anade agua, sal y aceite hasta que no quede harina seca. No amases: la masa debe quedar pegajosa.',
@@ -889,7 +900,7 @@ function seed() {
             '10 g sal',
             '20 g aceite de oliva',
             'Para la bandeja: 3-4 cucharadas de aceite',
-            'Toppings: sal gruesa, romero, tomates cherry, cebolla caramelizada (opcional) y aceite de oliva',
+            'Toppings: sal gruesa, romero, el topping que tu quieras (por ejemplo tomates cherry o cebolla caramelizada) y aceite de oliva',
           ],
           steps: [
             'Mezcla la masa igual que en el nivel 1 y deja reposar 15 minutos.',
@@ -909,6 +920,8 @@ function seed() {
     },
   ];
 }
+
+
 
 
 

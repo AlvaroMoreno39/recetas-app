@@ -43,7 +43,7 @@
     "profile": "dulce",
     "difficulty": "media",
     "prepTime": 55,
-    "image": "assets/images/recipes/bizcocho-manzana-thermomix.jpg",
+    "image": "assets/images/recipes/bizcocho-manzana.jpg",
     "ingredients": [
       "3 huevos",
       "150 g azucar",
@@ -77,7 +77,7 @@
     "profile": "salado",
     "difficulty": "baja",
     "prepTime": 300,
-    "image": "https://www.elinasaiach.com/wp-content/uploads/2023/06/Focaccia-de-Verano_2.jpeg",`r`n    "ingredients": [],`r`n    "steps": [],`r`n    "notes": "Receta progresiva de focaccia con dos niveles para aprender pliegues, fermentacion y mejor estructura de masa sin llenar la web de varias cards parecidas.",
+    "image": "assets/images/recipes/focaccia-artesanal.jpg",`r`n    "ingredients": [],`r`n    "steps": [],`r`n    "notes": "Receta progresiva de focaccia con dos niveles para aprender pliegues, fermentacion y mejor estructura de masa sin llenar la web de varias cards parecidas.",
     "variants": [
       {
         "id": "focaccia-nivel-1",
@@ -98,7 +98,7 @@
           "10 g sal",
           "20 g aceite de oliva virgen extra",
           "Para la bandeja: 3-4 cucharadas de aceite de oliva virgen extra",
-          "Toppings: sal gruesa o en escamas, romero, tomates cherry (opcional) y aceite de oliva virgen extra"
+          "Toppings: sal gruesa o en escamas, romero, el topping que tu quieras (por ejemplo tomates cherry) y aceite de oliva virgen extra"
         ],
         "steps": [
           "Mezcla en un bol grande la harina con la levadura.",
@@ -135,7 +135,7 @@
           "10 g sal",
           "20 g aceite de oliva",
           "Para la bandeja: 3-4 cucharadas de aceite",
-          "Toppings: sal gruesa, romero, tomates cherry, cebolla caramelizada (opcional) y aceite de oliva"
+          "Toppings: sal gruesa, romero, el topping que tu quieras (por ejemplo tomates cherry o cebolla caramelizada) y aceite de oliva"
         ],
         "steps": [
           "Prepara la mezcla igual que en el nivel 1 y deja reposar 15 minutos.",
@@ -154,6 +154,8 @@
     "updatedAt": "2026-07-24T00:00:00.000Z"
   }
 ]
+
+
 
 
 

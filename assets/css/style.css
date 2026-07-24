@@ -99,6 +99,10 @@ h1 {
   box-shadow: 0 10px 24px rgba(35, 24, 14, 0.08);
   padding: 14px;
   margin-bottom: 12px;
+  transition:
+    box-shadow var(--motion-base) var(--easing-soft),
+    transform var(--motion-base) var(--easing-soft),
+    background-color var(--motion-base) var(--easing-soft);
 }
 
 .search-field {
@@ -131,6 +135,7 @@ h1 {
   color: #8a3b1c;
   font-size: 12px;
   font-weight: 700;
+  animation: reveal-chip var(--motion-fast) var(--easing-soft) both;
 }
 
 label {
@@ -152,7 +157,11 @@ select {
   background: #fff;
   color: var(--text);
   font: inherit;
-  transition: border-color var(--motion-fast) var(--easing-soft), box-shadow var(--motion-fast) var(--easing-soft);
+  transition:
+    border-color var(--motion-fast) var(--easing-soft),
+    box-shadow var(--motion-fast) var(--easing-soft),
+    background-color var(--motion-fast) var(--easing-soft),
+    transform var(--motion-fast) var(--easing-soft);
 }
 
 input:focus,
@@ -290,7 +299,11 @@ select:focus {
   transition:
     transform var(--motion-fast) var(--easing-soft),
     background-color var(--motion-fast) var(--easing-soft),
-    border-color var(--motion-fast) var(--easing-soft);
+    border-color var(--motion-fast) var(--easing-soft),
+    box-shadow var(--motion-fast) var(--easing-soft),
+    opacity var(--motion-fast) var(--easing-soft);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .btn:focus {
@@ -416,6 +429,7 @@ select:focus {
   overflow: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
 }
 
 .panel-detail .panel-head {
@@ -448,11 +462,12 @@ select:focus {
 
 .detail-img {
   width: 100%;
-  max-height: 340px;
-  object-fit: cover;
+  max-height: clamp(320px, 56vh, 620px);
+  object-fit: contain;
   border-radius: 12px;
   margin-top: 6px;
   display: block;
+  background: linear-gradient(180deg, #fff8ef, #f5e6d0);
 }
 
 .list {
@@ -559,6 +574,17 @@ select:focus {
   from {
     opacity: 0.82;
     transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes reveal-chip {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
