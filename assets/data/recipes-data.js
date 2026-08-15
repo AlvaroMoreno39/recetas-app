@@ -1,4 +1,4 @@
-[
+window.RECIPES_DATA = [
   {
     "id": "seed-banana-thermomix",
     "title": "Bizcocho de platano perfecto (Thermomix)",
@@ -244,4 +244,4 @@
     "notes": "Base sencilla para crear tu masa madre integral desde cero y mantenerla viva durante anos. Incluye refrescos, senales de madurez, uso en recetas y conservacion en nevera.",
     "updatedAt": "2026-08-15T00:00:00.000Z"
   }
-]
+];

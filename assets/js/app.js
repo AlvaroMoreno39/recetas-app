@@ -1,4 +1,4 @@
-const RECIPES_JSON_URL = 'assets/data/recipes.json';
+const RECIPES_JSON_URL = 'assets/data/recipes.json?v=20260815b';
 
 const state = {
   recipes: [],
@@ -114,6 +114,14 @@ function bindEvents() {
 }
 
 async function loadRecipes() {
+  const bundledRecipes = Array.isArray(window.RECIPES_DATA) ? window.RECIPES_DATA : null;
+  if (bundledRecipes?.length) {
+    return bundledRecipes
+      .filter((item) => item && typeof item === 'object')
+      .map(normalizeRecipe)
+      .sort((a, b) => dateValue(b.updatedAt) - dateValue(a.updatedAt));
+  }
+
   try {
     const response = await fetch(RECIPES_JSON_URL, { cache: 'no-store' });
     if (!response.ok) throw new Error(`recipes_json_${response.status}`);
@@ -138,6 +146,7 @@ function normalizeRecipe(item) {
   const inferredProfile = safeString(item.profile || inferProfileFromLegacy(item));
   const inferredDifficulty = safeString(item.difficulty || inferDifficultyFromLegacy(item));
   const variants = Array.isArray(item.variants) ? item.variants.map(normalizeVariant).filter(Boolean) : [];
+  const images = normalizeImageList(item.images, item.image);
 
   return {
     id: typeof item.id === 'string' ? item.id : createId(),
@@ -146,7 +155,8 @@ function normalizeRecipe(item) {
     profile: normalizeProfile(inferredProfile),
     difficulty: normalizeDifficulty(inferredDifficulty),
     prepTime: positiveNumberOrNull(item.prepTime),
-    image: normalizeImageUrl(item.image),
+    image: images[0] || '',
+    images,
     ingredients: Array.isArray(item.ingredients) ? item.ingredients.map(safeString).filter(Boolean) : [],
     steps: Array.isArray(item.steps) ? item.steps.map(safeString).filter(Boolean) : [],
     notes: safeString(item.notes),
@@ -157,6 +167,7 @@ function normalizeRecipe(item) {
 
 function normalizeVariant(item) {
   if (!item || typeof item !== 'object') return null;
+  const images = normalizeImageList(item.images, item.image);
 
   return {
     id: typeof item.id === 'string' ? item.id : createId(),
@@ -164,6 +175,8 @@ function normalizeVariant(item) {
     title: safeString(item.title),
     difficulty: normalizeDifficulty(item.difficulty),
     prepTime: positiveNumberOrNull(item.prepTime),
+    image: images[0] || '',
+    images,
     summary: safeString(item.summary),
     learns: Array.isArray(item.learns) ? item.learns.map(safeString).filter(Boolean) : [],
     ingredients: Array.isArray(item.ingredients) ? item.ingredients.map(safeString).filter(Boolean) : [],
@@ -353,17 +366,19 @@ function openDetail(recipeId) {
   if (!recipe) return;
 
   el.detailTitle.textContent = recipe.title;
-  renderRecipeDetail(recipe, 0);
+  renderRecipeDetail(recipe, 0, 0);
 
   showDialog(el.detailDialog);
 }
 
-function renderRecipeDetail(recipe, variantIndex) {
+function renderRecipeDetail(recipe, variantIndex, imageIndex = 0) {
   if (!el.detailBody) return;
 
   const variants = Array.isArray(recipe.variants) ? recipe.variants : [];
   const selectedVariant = variants[variantIndex] || null;
   const detail = selectedVariant || getPrimaryDetail(recipe);
+  const imageList = getDetailImages(recipe, selectedVariant);
+  const selectedImage = imageList[imageIndex] || imageList[0] || createPlaceholderImage(recipe.title);
   const ingredients = getDetailIngredients(recipe, selectedVariant).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
   const steps = getDetailSteps(recipe, selectedVariant).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
   const learns = selectedVariant?.learns?.length
@@ -394,12 +409,36 @@ function renderRecipeDetail(recipe, variantIndex) {
         </section>
       `
       : '';
+  const gallery =
+    imageList.length > 1
+      ? `
+        <div class="detail-gallery" aria-label="Galeria de imagenes">
+          ${imageList
+            .map(
+              (image, index) => `
+                <button
+                  type="button"
+                  class="detail-thumb-btn ${index === imageIndex ? 'is-active' : ''}"
+                  data-image-index="${index}"
+                  aria-label="Ver imagen ${index + 1}"
+                >
+                  <img src="${escapeAttribute(image)}" alt="${escapeAttribute(`${recipe.title} ${index + 1}`)}" class="detail-thumb-img" />
+                </button>
+              `
+            )
+            .join('')}
+        </div>
+      `
+      : '';
 
   el.detailBody.innerHTML = `
     <section class="detail-hero">
-      <img src="${escapeAttribute(recipe.image || createPlaceholderImage(recipe.title))}" alt="${escapeAttribute(
-        recipe.title
-      )}" class="detail-img" />
+      <div class="detail-media">
+        <img src="${escapeAttribute(selectedImage)}" alt="${escapeAttribute(
+          recipe.title
+        )}" class="detail-img" />
+      </div>
+      ${gallery}
       <div class="detail-meta">
         <span class="detail-pill">${escapeHtml(recipe.type)}</span>
         <span class="detail-pill">${escapeHtml(formatDurationBand(detail.prepTime))}</span>
@@ -442,7 +481,13 @@ function renderRecipeDetail(recipe, variantIndex) {
 
   el.detailBody.querySelectorAll('[data-variant-index]').forEach((button) => {
     button.addEventListener('click', () => {
-      renderRecipeDetail(recipe, Number(button.dataset.variantIndex || 0));
+      renderRecipeDetail(recipe, Number(button.dataset.variantIndex || 0), 0);
+    });
+  });
+
+  el.detailBody.querySelectorAll('[data-image-index]').forEach((button) => {
+    button.addEventListener('click', () => {
+      renderRecipeDetail(recipe, variantIndex, Number(button.dataset.imageIndex || 0));
     });
   });
 }
@@ -496,6 +541,11 @@ function getDetailIngredients(recipe, variant) {
 
 function getDetailSteps(recipe, variant) {
   return variant?.steps?.length ? variant.steps : recipe.steps;
+}
+
+function getDetailImages(recipe, variant) {
+  const candidateList = Array.isArray(variant?.images) && variant.images.length > 0 ? variant.images : recipe.images;
+  return Array.isArray(candidateList) && candidateList.length > 0 ? candidateList : [recipe.image || createPlaceholderImage(recipe.title)];
 }
 
 function setTagContent(element, value) {
@@ -650,6 +700,13 @@ function normalizeImageUrl(raw) {
   }
 
   return url.toString();
+}
+
+function normalizeImageList(items, fallback) {
+  const fromArray = Array.isArray(items) ? items.map(normalizeImageUrl).filter(Boolean) : [];
+  const fallbackImage = normalizeImageUrl(fallback);
+  if (fromArray.length > 0) return fromArray;
+  return fallbackImage ? [fallbackImage] : [];
 }
 
 function escapeHtml(text) {
@@ -919,41 +976,86 @@ function seed() {
       updatedAt: '2026-07-24T00:00:00.000Z',
     },
     {
-      id: 'pan-masa-madre-cocotte-8020',
-      title: 'Pan de masa madre en cocotte (80/20)',
+      id: 'pan-masa-madre-cocotte',
+      title: 'Pan de masa madre en cocotte',
       type: 'Pan',
       profile: 'salado',
       difficulty: 'alta',
       prepTime: 1080,
       image: '',
+      ingredients: [],
+      steps: [],
+      notes:
+        'Receta base para hogazas de masa madre en cocotte. Ahora mismo lleva la version 80/20, pero queda preparada para que luego anadas otras masas como 100 % blanca o nuevas combinaciones.',
+      variants: [
+        {
+          id: 'pan-masa-madre-8020',
+          label: '80/20',
+          title: 'Hogaza 80/20',
+          difficulty: 'alta',
+          prepTime: 1080,
+          summary:
+            'Version con 80 % harina blanca de fuerza y 20 % harina integral. Da una masa bastante manejable, con buen sabor, buena estructura y una miga muy equilibrada.',
+          learns: ['Autolisis', 'Pliegues y tensionado', 'Fermentacion en frio en banneton', 'Horneado en cocotte'],
+          ingredients: [
+            '400 g harina blanca de fuerza',
+            '100 g harina integral de trigo',
+            '350 g agua total',
+            '100 g masa madre activa al 100 % de hidratacion',
+            '10 g sal',
+          ],
+          steps: [
+            'Prepara la masa madre y usala cuando este activa, aireada, con burbujas y cerca de su pico.',
+            'Haz una autolisis de 30-45 minutos mezclando 400 g harina blanca, 100 g harina integral y 330 g de agua. Reserva 20 g de agua.',
+            'Anade 100 g de masa madre activa y mezcla pellizcando y plegando hasta repartirla bien. Deja reposar 15 minutos.',
+            'Disuelve 10 g de sal en los 20 g de agua reservada. Anadelo a la masa y mezcla con suavidad hasta que se absorba. Reposa 20-30 minutos.',
+            'Haz 4 tandas de pliegues, dejando unos 30 minutos entre cada una.',
+            'Deja fermentar en bloque hasta que la masa aumente aproximadamente un 40-50 %, se vea hinchada, con burbujas y cierta vibracion al mover el recipiente.',
+            'Vuelca la masa con cuidado, haz un preformado suave y crea tension arrastrandola sobre la mesa hasta formar una bola lisa.',
+            'Deja reposar 20 minutos en la encimera.',
+            'Haz el formado final plegando hacia el centro y enrollando con suavidad para mantener el gas.',
+            'Pon la hogaza en un banneton bien enharinado, con la superficie lisa abajo y la costura arriba. Cubre con film.',
+            'Lleva a la nevera entre 10 y 16 horas para la fermentacion en frio.',
+            'Precalienta horno y cocotte a 250C, calor arriba y abajo, durante 45 minutos.',
+            'Saca el pan frio de la nevera, vuelcalo sobre papel de horno y haz un grenado largo, ligeramente descentrado.',
+            'Hornea 20 minutos tapado a 240C dentro de la cocotte.',
+            'Destapa y termina el dorado a 210C durante 13-18 minutos, vigilando desde el minuto 13.',
+            'Deja enfriar sobre rejilla al menos 1 h 30 min, idealmente 2 horas, antes de cortar.',
+          ],
+        },
+      ],
+      updatedAt: '2026-08-15T00:00:00.000Z',
+    },
+    {
+      id: 'masa-madre-integral-trigo',
+      title: 'Masa madre integral de trigo',
+      type: 'Masa madre',
+      profile: 'salado',
+      difficulty: 'media',
+      prepTime: 10080,
+      image: 'assets/images/recipes/masa-madre-integral.jpg',
+      images: ['assets/images/recipes/masa-madre-integral.jpg', 'assets/images/recipes/pan-integral.jpg'],
       ingredients: [
-        '400 g harina blanca de fuerza',
-        '100 g harina integral de trigo',
-        '350 g agua total',
-        '100 g masa madre activa al 100 % de hidratacion',
-        '10 g sal',
+        'Para empezar: 30 g de harina integral de trigo',
+        'Para empezar: 30 g de agua a temperatura ambiente',
+        'Para los refrescos: harina integral de trigo',
+        'Para los refrescos: agua a temperatura ambiente',
+        'Tambien necesitaras un bote de cristal, una bascula y una goma elastica o rotulador para marcar el nivel',
       ],
       steps: [
-        'Prepara la masa madre y usala cuando este activa, aireada, con burbujas y cerca de su pico.',
-        'Haz una autolisis de 30-45 minutos mezclando 400 g harina blanca, 100 g harina integral y 330 g de agua. Reserva 20 g de agua.',
-        'Anade 100 g de masa madre activa y mezcla pellizcando y plegando hasta repartirla bien. Deja reposar 15 minutos.',
-        'Disuelve 10 g de sal en los 20 g de agua reservada. Anadelo a la masa y mezcla con suavidad hasta que se absorba. Reposa 20-30 minutos.',
-        'Haz 4 tandas de pliegues, dejando unos 30 minutos entre cada una.',
-        'Deja fermentar en bloque hasta que la masa aumente aproximadamente un 40-50 %, se vea hinchada, con burbujas y cierta vibracion al mover el recipiente.',
-        'Vuelca la masa con cuidado, haz un preformado suave y crea tension arrastrandola sobre la mesa hasta formar una bola lisa.',
-        'Deja reposar 20 minutos en la encimera.',
-        'Haz el formado final plegando hacia el centro y enrollando con suavidad para mantener el gas.',
-        'Pon la hogaza en un banneton bien enharinado, con la superficie lisa abajo y la costura arriba. Cubre con film.',
-        'Lleva a la nevera entre 10 y 16 horas para la fermentacion en frio.',
-        'Precalienta horno y cocotte a 250C, calor arriba y abajo, durante 45 minutos.',
-        'Saca el pan frio de la nevera, vuelcalo sobre papel de horno y haz un greñado largo, ligeramente descentrado.',
-        'Hornea 20 minutos tapado a 240C dentro de la cocotte.',
-        'Destapa y termina el dorado a 210C durante 13-18 minutos, vigilando desde el minuto 13.',
-        'Deja enfriar sobre rejilla al menos 1 h 30 min, idealmente 2 horas, antes de cortar.',
+        'Dia 1: mezcla 30 g de harina integral de trigo con 30 g de agua hasta obtener una pasta espesa y homogenea. Marca el nivel y deja el bote unas 24 horas a temperatura ambiente.',
+        'Dia 2: conserva 30 g de la mezcla anterior, desecha el resto y anade 30 g de agua y 30 g de harina integral. Mezcla y vuelve a marcar el nivel.',
+        'Durante los dias siguientes repite aproximadamente cada 24 horas: conserva 30 g, anade 30 g de agua, mezcla, anade 30 g de harina integral y vuelve a mezclar bien.',
+        'No te asustes si durante los primeros dias hay olores fuertes, poca actividad o algo de liquido. Lo importante es que con el tiempo evolucione hacia un aroma acido y fermentado agradable.',
+        'Si aparece moho o manchas rosas, naranjas o de colores anormales, desecha la masa madre y empieza de nuevo.',
+        'Considera que esta lista cuando, despues de alimentarla, duplica o triplica de forma consistente, tiene muchas burbujas y un aroma agradable durante varios refrescos seguidos.',
+        'El pico de actividad llega despues del refresco, cuando crece al maximo antes de empezar a bajar. Ese es el mejor momento para usarla en pan.',
+        'Una vez madura, puedes ajustar la velocidad con proporciones como 1:1:1, 1:2:2 o 1:3:3 segun tu horario.',
+        'Para guardarla en nevera, refrescala por ejemplo con 20 g de masa madre, 40 g de agua y 40 g de harina integral, deja que arranque un poco y refrigerala.',
+        'Para reactivarla despues de la nevera, saca una pequena cantidad, refrescala, espera de nuevo al pico y ya podras usarla en tus masas.',
       ],
       notes:
-        'Hogaza de masa madre en cocotte con mezcla 80/20: 80 % harina blanca de fuerza y 20 % harina integral. Da una masa bastante manejable, con buen sabor y una miga muy equilibrada.',
-      variants: [],
+        'Base sencilla para crear tu masa madre integral desde cero y mantenerla viva durante anos. Incluye refrescos, senales de madurez, uso en recetas y conservacion en nevera.',
       updatedAt: '2026-08-15T00:00:00.000Z',
     },
   ];
