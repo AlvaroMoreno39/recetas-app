@@ -982,7 +982,7 @@ function seed() {
       profile: 'salado',
       difficulty: 'alta',
       prepTime: 1080,
-      image: '',
+      image: 'assets/images/recipes/pan-masa-madre.jpg',
       ingredients: [],
       steps: [],
       notes:

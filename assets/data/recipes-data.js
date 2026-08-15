@@ -163,7 +163,7 @@ window.RECIPES_DATA = [
     "profile": "salado",
     "difficulty": "alta",
     "prepTime": 1080,
-    "image": "",
+    "image": "assets/images/recipes/pan-masa-madre.jpg",
     "ingredients": [],
     "steps": [],
     "notes": "Receta base para hogazas de masa madre en cocotte. Ahora mismo lleva la version 80/20, pero queda preparada para que luego anadas otras masas como 100 % blanca o nuevas combinaciones.",
