@@ -77,7 +77,10 @@
     "profile": "salado",
     "difficulty": "baja",
     "prepTime": 300,
-    "image": "assets/images/recipes/focaccia-artesanal.jpg",`r`n    "ingredients": [],`r`n    "steps": [],`r`n    "notes": "Receta progresiva de focaccia con dos niveles para aprender pliegues, fermentacion y mejor estructura de masa sin llenar la web de varias cards parecidas.",
+    "image": "assets/images/recipes/focaccia-artesanal.jpg",
+    "ingredients": [],
+    "steps": [],
+    "notes": "Receta progresiva de focaccia con dos niveles para aprender pliegues, fermentacion y mejor estructura de masa sin llenar la web de varias cards parecidas.",
     "variants": [
       {
         "id": "focaccia-nivel-1",
@@ -152,10 +155,41 @@
       }
     ],
     "updatedAt": "2026-07-24T00:00:00.000Z"
+  },
+  {
+    "id": "pan-masa-madre-cocotte-8020",
+    "title": "Pan de masa madre en cocotte (80/20)",
+    "type": "Pan",
+    "profile": "salado",
+    "difficulty": "alta",
+    "prepTime": 1080,
+    "image": "",
+    "ingredients": [
+      "400 g harina blanca de fuerza",
+      "100 g harina integral de trigo",
+      "350 g agua total",
+      "100 g masa madre activa al 100 % de hidratacion",
+      "10 g sal"
+    ],
+    "steps": [
+      "Prepara la masa madre y usala cuando este activa, aireada, con burbujas y cerca de su pico.",
+      "Haz una autolisis de 30-45 minutos mezclando 400 g harina blanca, 100 g harina integral y 330 g de agua. Reserva 20 g de agua.",
+      "Anade 100 g de masa madre activa y mezcla pellizcando y plegando hasta repartirla bien. Deja reposar 15 minutos.",
+      "Disuelve 10 g de sal en los 20 g de agua reservada. Anadelo a la masa y mezcla con suavidad hasta que se absorba. Reposa 20-30 minutos.",
+      "Haz 4 tandas de pliegues, dejando unos 30 minutos entre cada una.",
+      "Deja fermentar en bloque hasta que la masa aumente aproximadamente un 40-50 %, se vea hinchada, con burbujas y cierta vibracion al mover el recipiente.",
+      "Vuelca la masa con cuidado, haz un preformado suave y crea tension arrastrandola sobre la mesa hasta formar una bola lisa.",
+      "Deja reposar 20 minutos en la encimera.",
+      "Haz el formado final plegando hacia el centro y enrollando con suavidad para mantener el gas.",
+      "Pon la hogaza en un banneton bien enharinado, con la superficie lisa abajo y la costura arriba. Cubre con film.",
+      "Lleva a la nevera entre 10 y 16 horas para la fermentacion en frio.",
+      "Precalienta horno y cocotte a 250C, calor arriba y abajo, durante 45 minutos.",
+      "Saca el pan frio de la nevera, vuelcalo sobre papel de horno y haz un greñado largo, ligeramente descentrado.",
+      "Hornea 20 minutos tapado a 240C dentro de la cocotte.",
+      "Destapa y termina el dorado a 210C durante 13-18 minutos, vigilando desde el minuto 13.",
+      "Deja enfriar sobre rejilla al menos 1 h 30 min, idealmente 2 horas, antes de cortar."
+    ],
+    "notes": "Hogaza de masa madre en cocotte con mezcla 80/20: 80 % harina blanca de fuerza y 20 % harina integral. Da una masa bastante manejable, con buen sabor y una miga muy equilibrada.",
+    "updatedAt": "2026-08-15T00:00:00.000Z"
   }
 ]
-
-
-
-
-
