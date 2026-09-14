@@ -1095,6 +1095,42 @@ function seed() {
       "variants": [],
       "updatedAt": "2026-09-14T00:00:00.000Z"
     },
+    {
+      "id": "pasta-fresca-al-huevo",
+      "title": "Pasta fresca al huevo",
+      "type": "Pasta",
+      "profile": "salado",
+      "difficulty": "media",
+      "prepTime": 90,
+      "image": "",
+      "ingredients": [
+        "Por persona: 100 g de harina de trigo y aproximadamente 55-60 g de huevo sin cascara (como referencia sencilla, 1 huevo)",
+        "Para 2 personas: 200 g de harina y unos 110-120 g de huevo sin cascara (aproximadamente 2 huevos)",
+        "Para 4 personas: 400 g de harina y unos 220-240 g de huevo sin cascara (aproximadamente 4 huevos)",
+        "Preferiblemente harina italiana tipo 00 para pasta fresca; tambien puedes utilizar harina comun de trigo",
+        "Un poco de harina extra para la mesa y para separar las hebras",
+        "Agua y sal para la coccion"
+      ],
+      "steps": [
+        "Medir: toma como referencia 100 g de harina por persona y 55-60 g de huevo sin cascara. Un huevo por cada 100 g es una regla facil de recordar, pero pesarlo permite ajustar mejor. La absorcion de la harina y el tamano de los huevos varian.",
+        "Mezclar: forma un volcan con la harina sobre la mesa y pon los huevos en el centro. Batelos con un tenedor e incorpora poco a poco la harina de las paredes. Tambien puedes empezar en un bol y pasar la masa a la encimera cuando se una.",
+        "Amasar: trabaja unos 8-10 minutos. Al principio puede estar seca y rugosa; amasa varios minutos antes de corregirla. Busca una masa firme, lisa, elastica, apenas pegajosa y que recupere parcialmente la forma al presionarla. No debe quedar tan blanda como una masa de pan o pizza.",
+        "Ajustar la textura: si esta un poco seca, humedece ligeramente los dedos y sigue amasando. Si esta bastante seca, puedes incorporar una yema; si no consigue unirse, anade huevo batido poco a poco, sin echar necesariamente un huevo entero. Si esta pegajosa, incorpora pequenas cantidades de harina. Haz correcciones graduales para no pasarte.",
+        "Reposar: forma una bola, envuelvela bien en film y deja 30-60 minutos a temperatura ambiente; 45 minutos son una buena referencia. La harina termina de hidratarse y el gluten se relaja.",
+        "Dividir: separa la masa en 3-4 porciones. Manten siempre tapadas las que no estes utilizando, porque se secan rapidamente al aire.",
+        "Con maquina: aplana una porcion y pasala por la posicion mas gruesa. Dobla en tres y repite 3-5 veces hasta obtener una lamina lisa. Reduce el grosor progresivamente, de grueso a medio y fino, sin saltar muchas posiciones. Como orientacion para una Marcato Atlas 150: 4 para una pasta mas gruesa, 5 para muchas pastas largas y 6 para pasta fina; ajusta al formato y a tu maquina.",
+        "Con rodillo: enharina muy ligeramente la mesa. Estira una porcion desde el centro hacia fuera, girandola regularmente, hasta obtener una lamina fina y uniforme. Manten tapado el resto de la masa.",
+        "Cortar: usa el accesorio de la maquina o corta a mano. Para tagliatelle o fettuccine, enharina ligeramente la lamina, enrollala sin apretar, corta tiras con un cuchillo y desenrollalas enseguida. Separa bien las hebras y espolvorea un poco de harina si se pegan. Para spaghetti redondos hace falta normalmente un cortador especifico; con cuchillo obtendras pasta plana. Tambien puedes preparar laminas de lasana o utilizarla para ravioli.",
+        "Cocer: utiliza abundante agua hirviendo con sal. Como referencia para pasta larga fresca, calcula aproximadamente 1,5-3 minutos, segun el grosor, y prueba el punto. Otros formatos, especialmente los rellenos, pueden necesitar tiempos distintos.",
+        "Terminar con salsa: si vas a cocinarla otros 30-60 segundos en la salsa, sacala del agua un poco antes. Reserva algo del agua de coccion para ayudar a ligar la salsa.",
+        "Preparar para congelar: separa las hebras y forma nidos sueltos, sin compactarlos. Deja 10-15 minutos al aire para secar ligeramente la superficie y colocalos separados sobre una bandeja con papel de horno.",
+        "Congelar: lleva la bandeja al congelador unas 2 horas, o hasta que los nidos esten completamente duros. Despues pasalos a bolsas de congelacion o recipientes hermeticos. Congelarlos separados evita que formen un bloque.",
+        "Cocinar congelada: no descongeles. Pasa los nidos directamente al agua hirviendo con sal y mueve suavemente durante los primeros segundos para separar las hebras. Comprueba la coccion probando la pasta."
+      ],
+      "notes": "Pasta fresca italiana para estirar con maquina o rodillo: tagliatelle, fettuccine, lasana, ravioli y otros formatos. Referencia por persona: 100 g de harina y unos 55-60 g de huevo sin cascara. Las proporciones son orientativas; la textura final manda. El tiempo indicado es aproximado e incluye el reposo, pero no la congelacion opcional.",
+      "variants": [],
+      "updatedAt": "2026-09-14T00:00:00.000Z"
+    },
   ];
 }
 
