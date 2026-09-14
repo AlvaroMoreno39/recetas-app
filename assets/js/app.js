@@ -845,6 +845,7 @@ function seed() {
       ],
       steps: [
         'Precalienta horno a 180C, calor arriba y abajo.',
+        'Coloca la rejilla en la posicion central: nivel 3 si tu horno tiene 5 niveles, contando siempre desde abajo. En uno de 3 niveles, usa el 2; si tiene un numero par, elige entre las dos posiciones centrales la que deje el centro del bizcocho mas cerca del centro del horno.',
         'Tritura 3 platanos: 5 seg / vel 5.',
         'Anade huevos, azucar, mantequilla y aceite: 20 seg / vel 4.',
         'Si mantequilla dura: 20 seg / 50C / vel 2 antes.',
