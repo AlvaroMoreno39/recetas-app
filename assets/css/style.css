@@ -94,8 +94,8 @@ h1 {
 }
 
 .search-panel {
-  background: rgba(255, 255, 255, 0.93);
-  border: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: 0 10px 24px rgba(35, 24, 14, 0.08);
   padding: 14px;
