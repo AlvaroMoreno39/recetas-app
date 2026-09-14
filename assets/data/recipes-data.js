@@ -320,7 +320,7 @@ window.RECIPES_DATA = [
     "profile": "salado",
     "difficulty": "media",
     "prepTime": 30,
-    "image": "assets/images/recipes/carbonara-romana.jpg",
+    "image": "assets/images/recipes/carbonara-trastevere.jpg",
     "ingredients": [
       "Para 2 personas: 200 g de pasta (por ejemplo, spaghetti secos)",
       "100-120 g de guanciale",
