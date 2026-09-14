@@ -22,7 +22,7 @@ window.RECIPES_DATA = [
     ],
     "steps": [
       "Precalienta horno a 180C, calor arriba y abajo.",
-      "Coloca la rejilla en la posicion central: nivel 3 si tu horno tiene 5 niveles, contando siempre desde abajo. En uno de 3 niveles, usa el 2; si tiene un numero par, elige entre las dos posiciones centrales la que deje el centro del bizcocho mas cerca del centro del horno.",
+      "Coloca la rejilla en el nivel 2 si tu horno tiene 5 niveles, contando desde abajo. Para otros hornos, toma como referencia una posicion media-baja; en uno de 3 niveles, empieza por el 2. Ajusta segun el comportamiento de tu horno y la altura del molde.",
       "Tritura 3 platanos: 5 seg / vel 5.",
       "Anade huevos, azucar, mantequilla y aceite: 20 seg / vel 4.",
       "Si mantequilla dura: 20 seg / 50C / vel 2 antes.",
@@ -30,6 +30,8 @@ window.RECIPES_DATA = [
       "Opcional chocolate o nueces: 5 seg / giro inverso / vel 3.",
       "Vierte en molde plum cake engrasado o con papel de horno.",
       "Hornea a 180C durante 35-45 min (puede llegar a 50 min).",
+      "Observa como se dora para ajustar la altura en las siguientes hornadas: si se tuesta demasiado por arriba, prueba un nivel mas bajo; si se tuesta demasiado la base, prueba uno mas alto. La coccion del interior depende tambien del tiempo, no solo de la altura.",
+      "Si la superficie ya esta dorada pero el interior sigue crudo, cubre el molde holgadamente con papel de aluminio y continua horneando, comprobando el centro con un palillo. El aluminio protege la parte superior mientras el interior termina de hacerse. Evita abrir el horno durante la primera parte de la coccion y no dejes que el aluminio toque las resistencias.",
       "Punto correcto: palillo con migas humedas, sin masa liquida.",
       "Deja 10-15 min en molde, desmolda y enfria 20-30 min antes de cortar.",
       "Conservacion: envolver en film y guardar a temperatura ambiente (2-3 dias)."
