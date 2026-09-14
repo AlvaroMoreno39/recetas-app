@@ -433,7 +433,7 @@ function renderRecipeDetail(recipe, variantIndex, imageIndex = 0) {
 
   el.detailBody.innerHTML = `
     <section class="detail-hero">
-      <div class="detail-media">
+      <div class="detail-media${recipe.id === 'pizza-casera-fermentacion-lenta' ? ' detail-media-pizza' : ''}">
         <img src="${escapeAttribute(selectedImage)}" alt="${escapeAttribute(
           recipe.title
         )}" class="detail-img" />
@@ -1037,7 +1037,7 @@ function seed() {
       difficulty: 'media',
       prepTime: 10080,
       image: 'assets/images/recipes/masa-madre-integral.jpg',
-      images: ['assets/images/recipes/masa-madre-integral.jpg', 'assets/images/recipes/pan-integral.jpg'],
+      images: ['assets/images/recipes/masa-madre-integral.jpg'],
       ingredients: [
         'Para empezar: 30 g de harina integral de trigo',
         'Para empezar: 30 g de agua a temperatura ambiente',

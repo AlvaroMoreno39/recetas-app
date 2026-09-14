@@ -491,6 +491,14 @@ select:focus {
   object-position: center;
 }
 
+.detail-media-pizza {
+  aspect-ratio: 4 / 3;
+}
+
+.detail-media-pizza .detail-img {
+  transform: scale(1.18);
+}
+
 .detail-gallery {
   display: flex;
   flex-wrap: wrap;
