@@ -312,5 +312,40 @@ window.RECIPES_DATA = [
     "notes": "Pasta fresca italiana para estirar con maquina o rodillo: tagliatelle, fettuccine, lasana, ravioli y otros formatos. Referencia por persona: 100 g de harina y unos 55-60 g de huevo sin cascara. Las proporciones son orientativas; la textura final manda. El tiempo indicado es aproximado e incluye el reposo, pero no la congelacion opcional.",
     "variants": [],
     "updatedAt": "2026-09-14T00:00:00.000Z"
+  },
+  {
+    "id": "carbonara-romana",
+    "title": "Carbonara romana",
+    "type": "Pasta",
+    "profile": "salado",
+    "difficulty": "media",
+    "prepTime": 30,
+    "image": "",
+    "ingredients": [
+      "Para 2 personas: 200 g de pasta (por ejemplo, spaghetti secos)",
+      "100-120 g de guanciale",
+      "4 yemas de huevo",
+      "80 g de Pecorino Romano, rallado muy fino, mas un poco para terminar",
+      "Pimienta negra recien molida",
+      "Sal para el agua de coccion, en cantidad moderada",
+      "Agua de coccion de la pasta: reserva unos 250 ml y utiliza solo la necesaria",
+      "Proporcion por persona: 100 g de pasta, 50-60 g de guanciale, 2 yemas y 40 g de Pecorino Romano"
+    ],
+    "steps": [
+      "Elegir la pasta: utiliza spaghetti secos, rigatoni, mezze maniche o tonnarelli. La pasta seca funciona muy bien; no necesitas preparar pasta fresca para esta receta.",
+      "Preparar el guanciale: cortalo en tiras o dados de 0,5-1 cm y ponlo en una sarten fria, sin aceite. Calienta a fuego medio-bajo hasta que libere grasa y quede dorado, ligeramente crujiente por fuera y jugoso por dentro. Retira los trozos y conserva la grasa.",
+      "Preparar la crema: mezcla energicamente las 4 yemas con los 80 g de Pecorino rallado muy fino y pimienta negra al gusto. Es normal que quede una pasta amarilla y espesa. Incorpora poco a poco 1-2 cucharadas de la grasa del guanciale, templada, sin que este muy caliente. Reserva el agua para ajustar despues.",
+      "Cocer la pasta: lleva agua a ebullicion y sala moderadamente, porque el guanciale y el queso ya aportan sal. Anade los spaghetti y deja que se ablanden para introducirlos suavemente, sin romperlos. Remueve y cuece aproximadamente 1 minuto menos de lo indicado por el fabricante, buscando un punto al dente.",
+      "Reservar el agua: antes de sacar la pasta, guarda unos 250 ml del agua de coccion. No se utiliza toda necesariamente; sirve para ajustar la salsa poco a poco.",
+      "Mezclar con el guanciale: devuelve buena parte de los trozos a la sarten con su grasa y guarda algunos para servir. Pasa la pasta casi cocida a la sarten, anade 1-2 cucharadas del agua reservada y mezcla durante 30-60 segundos.",
+      "Retirar del fuego: aparta completamente la sarten. Si esta extremadamente caliente, espera unos segundos. Pasa la pasta caliente y el guanciale al bol de yemas, queso y pimienta, y mezcla inmediatamente con energia. Controla el calor para evitar que las yemas cuajen en grumos.",
+      "Ajustar la salsa: anade 1 cucharada de agua de coccion, mezcla y comprueba. Repite solo si hace falta. Busca una salsa brillante, espesa pero cremosa, que se adhiera a la pasta sin formar un charco. El agua no tiene una cantidad fija.",
+      "Servir inmediatamente: reparte la pasta y termina con los trozos crujientes reservados, un poco de Pecorino recien rallado y pimienta negra.",
+      "Pasta fresca opcional: por persona, mezcla unos 100 g de harina con 1 huevo, amasa unos 10 minutos y deja reposar envuelta 30 minutos. Estira con rodillo o maquina y corta. Como referencia, cuece 2-4 minutos segun grosor, comprobando el punto. Este trabajo adicional no esta incluido en los 30 minutos de la receta.",
+      "Sustituciones: si no tienes guanciale, puedes utilizar panceta; el bacon aporta un sabor ahumado diferente. El Pecorino puede sustituirse por Parmigiano Reggiano o una mezcla a partes iguales de ambos. Ajusta la sal segun el queso elegido."
+    ],
+    "notes": "Carbonara al estilo romano con guanciale, Pecorino, pimienta y 2 yemas por persona para una salsa intensa y cremosa. La emulsion se forma con las yemas, el queso, la grasa del guanciale y agua de coccion anadida poco a poco. No necesita nata, leche, mantequilla, aceite, ajo ni cebolla.",
+    "variants": [],
+    "updatedAt": "2026-09-14T00:00:00.000Z"
   }
 ];
