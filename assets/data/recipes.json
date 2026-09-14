@@ -246,5 +246,50 @@
     ],
     "notes": "Base sencilla para crear tu masa madre integral desde cero y mantenerla viva durante anos. Incluye refrescos, senales de madurez, uso en recetas y conservacion en nevera.",
     "updatedAt": "2026-08-15T00:00:00.000Z"
+  },
+  {
+    "id": "pizza-casera-fermentacion-lenta",
+    "title": "Pizza casera de fermentacion lenta",
+    "type": "Pizza",
+    "profile": "salado",
+    "difficulty": "media",
+    "prepTime": 2160,
+    "image": "",
+    "ingredients": [
+      "Masa recomendada: 500 g de harina apta para fermentaciones largas",
+      "350 g de agua (70 % de hidratacion; reserva 20 g para la sal)",
+      "10 g de sal (2 %)",
+      "15 g de aceite de oliva virgen extra (3 %), mas un poco para el recipiente y la bandeja",
+      "1-1,5 g de levadura seca de panaderia para unas 24-36 horas, principalmente en nevera",
+      "Salsa para una bandeja grande: 180-220 g de tomate triturado, unos 3 g de sal y 5-10 g de AOVE",
+      "Mozzarella bien escurrida, cantidad al gusto",
+      "Opcional: Parmigiano Reggiano y albahaca fresca",
+      "Toppings al gusto: pepperoni, salami, prosciutto, jamon, champinones, cebolla, pimientos, aceitunas u otros quesos"
+    ],
+    "steps": [
+      "Elige la formula: como punto de partida, usa 70 % de hidratacion y 24-36 horas de fermentacion con 1-1,5 g de levadura seca por 500 g de harina. Son valores orientativos que puedes adaptar; observa siempre la actividad de la masa.",
+      "Hidratacion para 500 g de harina: 60 % = 300 g de agua (masa firme); 65 % = 325 g (manejable); 70 % = 350 g (aireada y equilibrada); 75 % = 375 g (mas pegajosa); 80 % = 400 g (requiere harina adecuada y mas tecnica). Para bandeja, empieza entre 65 y 75 %. Mas agua no significa automaticamente mejor pizza.",
+      "Levadura seca orientativa por 500 g de harina: 3-5 h, 5-7 g; 6-8 h, 3-4 g; 8-12 h, 2-3 g; 18-24 h, 1,5-2 g; 24-36 h, 1-1,5 g; 36-48 h, 0,5-1 g; 48-72 h, 0,3-0,7 g. Las fermentaciones cortas son principalmente a temperatura ambiente; desde 18 h, principalmente en nevera. Ajusta segun temperatura, harina y actividad de la levadura.",
+      "Reserva 20 g del agua. Mezcla el resto con la levadura e incorpora la harina poco a poco hasta hidratarla por completo. Tapa y deja reposar unos 20 minutos.",
+      "Disuelve la sal en el agua reservada e incorporala poco a poco. Anade el AOVE y trabaja suavemente hasta integrarlo. Reposa otros 15-20 minutos. Al 70 % o mas puede estar muy pegajosa al principio: no anadas harina solo porque se pegue.",
+      "Con las manos ligeramente humedas, estira un lateral y doblalo hacia el centro. Repite desde los distintos lados. Haz unas 3 rondas de pliegues, con 15 minutos de descanso entre rondas, hasta que gane estructura y elasticidad.",
+      "Para la fermentacion larga, pasa la masa a un recipiente ligeramente aceitado, cierralo bien y guardalo en la nevera. El dia de hornear, sacala unas 2-4 horas antes. No es obligatorio que duplique dentro de la nevera: busca burbujas, expansion y una masa activa, aireada y relajada. Los tiempos totales son aproximados e incluyen los reposos fuera del frio.",
+      "Si eliges una fermentacion corta con mas levadura, deja la masa principalmente a temperatura ambiente hasta que este claramente activa y aireada. Una cocina caliente acelera mucho el proceso: manda la masa, no solo el reloj.",
+      "Mezcla el tomate triturado con la sal y el aceite de la salsa. No hace falta cocinarla previamente.",
+      "Si usas mozzarella fresca, cortala y dejala escurrir. Puedes secarla con papel absorbente y conservarla en nevera hasta usarla para reducir el exceso de agua.",
+      "Unta la bandeja con una pelicula fina y uniforme de AOVE. Vuelca la masa con cuidado y extiendela del centro a los extremos con las manos ligeramente aceitadas. Evita el rodillo y no aplastes el gas.",
+      "Si la masa se encoge, dejala descansar 15-20 minutos antes de seguir extendiendo. Una vez extendida, reposa unos 30-60 minutos: debe quedar relajada, ligeramente hinchada y con algunas burbujas.",
+      "Precalienta el horno unos 30-40 minutos a su temperatura maxima. Referencia: 280 C, calor arriba y abajo, sin ventilador. Los tiempos siguientes son para 280 C; a 250 C necesitara algo mas. Usa una bandeja apta para la temperatura elegida.",
+      "Extiende una capa fina de tomate dejando 1-1,5 cm de borde. Puedes anadir un poco de Parmigiano Reggiano. Reserva la mozzarella y los toppings para la segunda fase y evita sobrecargar la pizza con ingredientes humedos.",
+      "Primer horneado: coloca la bandeja en una posicion baja, aproximadamente el segundo nivel contando desde abajo. A 280 C, hornea unos 8-10 minutos. Busca bordes crecidos que empiecen a dorarse, masa con estructura, tomate menos acuoso y una base que empiece a tostarse.",
+      "Saca la pizza y anade la mozzarella escurrida y los toppings elegidos. Puedes dividir la bandeja en varios sabores: margherita, pepperoni o cuatro quesos. Reserva el prosciutto y la albahaca para despues del horno. Los ingredientes que necesiten mas coccion deben prepararse antes.",
+      "Segundo horneado: devuelve la bandeja a una posicion central durante unos 3-5 minutos a 280 C. La mozzarella debe estar fundida y ligeramente burbujeante, los toppings cocinados y los bordes bien dorados. Puede salir algo de agua del queso o grasa del pepperoni.",
+      "Si la superficie necesita mas dorado, termina brevemente en una posicion mas alta vigilando constantemente. Ajusta los tiempos segun tu horno y el grosor de la masa.",
+      "Fuera del horno, termina al gusto con un hilo de AOVE, Parmigiano Reggiano, albahaca o prosciutto. Deja reposar unos 5 minutos antes de cortar.",
+      "Para adaptar cantidades, toma la harina como 100 %: agua 70 %, sal 2 % y AOVE 3 %. Con 750 g de harina: 525 g de agua, 15 g de sal y 22,5 g de AOVE. Escala tambien la levadura de la referencia para 500 g multiplicandola por 1,5 y ajusta al tiempo y la temperatura elegidos."
+    ],
+    "notes": "Pizza en bandeja de base ligeramente crujiente e interior tierno, elastico y aireado. Formula recomendada: 70 % de hidratacion y unas 24-36 horas, principalmente en frio. Incluye alternativas de hidratacion, levadura y fermentacion para adaptarla a tu horario.",
+    "variants": [],
+    "updatedAt": "2026-09-14T00:00:00.000Z"
   }
 ]
