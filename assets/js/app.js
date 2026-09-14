@@ -1074,7 +1074,7 @@ function seed() {
         "350 g de agua (70 % de hidratacion; reserva 20 g para la sal)",
         "10 g de sal (2 %)",
         "15 g de aceite de oliva virgen extra (3 %), mas un poco para el recipiente y la bandeja",
-        "1-1,5 g de levadura seca de panaderia para unas 24-36 horas, principalmente en nevera",
+        "Levadura seca de panaderia: cantidad segun el tiempo de fermentacion (ver indicaciones mas abajo)",
         "Salsa para una bandeja grande: 180-220 g de tomate triturado, unos 3 g de sal y 5-10 g de AOVE",
         "Mozzarella bien escurrida, cantidad al gusto",
         "Opcional: Parmigiano Reggiano y albahaca fresca",
