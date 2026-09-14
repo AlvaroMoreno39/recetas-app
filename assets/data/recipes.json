@@ -161,57 +161,43 @@
   },
   {
     "id": "pan-masa-madre-cocotte",
-    "title": "Pan de masa madre en cocotte",
+    "title": "Pan de masa madre - Receta base",
     "type": "Pan",
     "profile": "salado",
     "difficulty": "alta",
     "prepTime": 1080,
     "image": "assets/images/recipes/pan-masa-madre.jpg",
-    "ingredients": [],
-    "steps": [],
-    "notes": "Receta base para hogazas de masa madre en cocotte. Ahora mismo lleva la version 80/20, pero queda preparada para que luego anadas otras masas como 100 % blanca o nuevas combinaciones.",
-    "variants": [
-      {
-        "id": "pan-masa-madre-8020",
-        "label": "80/20",
-        "title": "Hogaza 80/20",
-        "difficulty": "alta",
-        "prepTime": 1080,
-        "summary": "Version con 80 % harina blanca de fuerza y 20 % harina integral. Da una masa bastante manejable, con buen sabor, buena estructura y una miga muy equilibrada.",
-        "learns": [
-          "Autolisis",
-          "Pliegues y tensionado",
-          "Fermentacion en frio en banneton",
-          "Horneado en cocotte"
-        ],
-        "ingredients": [
-          "400 g harina blanca de fuerza",
-          "100 g harina integral de trigo",
-          "350 g agua total",
-          "100 g masa madre activa al 100 % de hidratacion",
-          "10 g sal"
-        ],
-        "steps": [
-          "Prepara la masa madre y usala cuando este activa, aireada, con burbujas y cerca de su pico.",
-          "Haz una autolisis de 30-45 minutos mezclando 400 g harina blanca, 100 g harina integral y 330 g de agua. Reserva 20 g de agua.",
-          "Anade 100 g de masa madre activa y mezcla pellizcando y plegando hasta repartirla bien. Deja reposar 15 minutos.",
-          "Disuelve 10 g de sal en los 20 g de agua reservada. Anadelo a la masa y mezcla con suavidad hasta que se absorba. Reposa 20-30 minutos.",
-          "Haz 4 tandas de pliegues, dejando unos 30 minutos entre cada una.",
-          "Deja fermentar en bloque hasta que la masa aumente aproximadamente un 40-50 %, se vea hinchada, con burbujas y cierta vibracion al mover el recipiente.",
-          "Vuelca la masa con cuidado, haz un preformado suave y crea tension arrastrandola sobre la mesa hasta formar una bola lisa.",
-          "Deja reposar 20 minutos en la encimera.",
-          "Haz el formado final plegando hacia el centro y enrollando con suavidad para mantener el gas.",
-          "Pon la hogaza en un banneton bien enharinado, con la superficie lisa abajo y la costura arriba. Cubre con film.",
-          "Lleva a la nevera entre 10 y 16 horas para la fermentacion en frio.",
-          "Precalienta horno y cocotte a 250C, calor arriba y abajo, durante 45 minutos.",
-          "Saca el pan frio de la nevera, vuelcalo sobre papel de horno y haz un grenado largo, ligeramente descentrado.",
-          "Hornea 20 minutos tapado a 240C dentro de la cocotte.",
-          "Destapa y termina el dorado a 210C durante 13-18 minutos, vigilando desde el minuto 13.",
-          "Deja enfriar sobre rejilla al menos 1 h 30 min, idealmente 2 horas, antes de cortar."
-        ]
-      }
+    "ingredients": [
+      "Para 1 hogaza: 500 g de harina total (trigo blanco de fuerza e integral, en la proporcion elegida)",
+      "350 g de agua: 330 g para la autolisis y 20 g reservados para la sal",
+      "100 g de masa madre activa al 100 % de hidratacion",
+      "10 g de sal",
+      "Harina de arroz para el banneton y, opcionalmente, para espolvorear antes de hornear",
+      "Mezcla blanca: 500 g de harina blanca; 90/10: 450 g blanca + 50 g integral; 80/20: 400 g blanca + 100 g integral; 70/30: 350 g blanca + 150 g integral; 50/50: 250 g blanca + 250 g integral",
+      "Para la parte blanca, utiliza harina de fuerza o panificable, aproximadamente 12-14 g de proteina por 100 g. Las proporciones anteriores se refieren a los 500 g de harina anadida; la harina del cultivo tambien influye en la mezcla final."
     ],
-    "updatedAt": "2026-08-15T00:00:00.000Z"
+    "steps": [
+      "Activar la masa madre: alimentala y espera a que este cerca de su pico, con aumento claro de volumen, abundantes burbujas, textura aireada, superficie ligeramente abombada y aroma agradable, fermentado y algo acido. Utiliza 100 g. No es necesaria la prueba de flotacion.",
+      "Autolisis (30-45 min): mezcla los 500 g de harinas elegidas con 330 g de agua hasta que no quede harina seca. Reserva los otros 20 g. No hace falta amasar; tapa y deja reposar para que se hidrate y empiece a desarrollar gluten.",
+      "Anadir la masa madre: incorpora los 100 g con las manos ligeramente humedas, pellizcando y plegando suavemente hasta distribuirla. Reposa 15 minutos. La fermentacion en bloque empieza a contar desde esta incorporacion.",
+      "Anadir la sal: disuelve 10 g de sal en los 20 g de agua reservada e incorpora con pellizcos y pliegues. Si parece perder estructura, continua suavemente hasta absorber el agua. Reposa 20-30 minutos.",
+      "Pliegues: haz 4 tandas separadas unos 30 minutos. En cada una, humedece la mano, estira suavemente un lateral y doblalo al centro; gira el recipiente 90 grados y repite hasta completar los cuatro lados. La masa debe ganar elasticidad y resistencia. Tras la cuarta tanda, deja de manipularla.",
+      "Fermentacion en bloque: deja tapada a temperatura ambiente hasta un aumento aproximado del 40-50 %, con burbujas, superficie algo abombada, aspecto aireado y ligero temblor al mover el recipiente. A 25-26 C, unas 4-5 horas desde que anadiste la masa madre son orientativas. La temperatura, harina y actividad del cultivo cambian los tiempos: manda la apariencia de la masa.",
+      "Preformado: vuelca con cuidado sobre una encimera limpia, lleva los extremos al centro y gira para dejar la costura abajo. Arrastra suavemente hacia ti, girando entre movimientos, hasta formar una bola lisa y tensa. Conserva el gas y para cuando mantenga razonablemente la forma.",
+      "Reposo: deja la masa 20 minutos sobre la encimera. Es normal que se relaje y ensanche ligeramente.",
+      "Formado final: dale la vuelta con la zona pegajosa arriba. Pliega la parte inferior, izquierda y derecha hacia el centro, y la superior hacia abajo. Enrolla con suavidad creando tension, sin expulsar el gas, y cierra la costura si hace falta.",
+      "Banneton: enharinalo generosamente con harina de arroz. Coloca la hogaza con la superficie lisa abajo y la costura arriba; puedes pellizcarla para cerrarla. Cubre para evitar que la masa se reseque.",
+      "Fermentacion en frio: lleva directamente a la nevera durante unas 10-16 horas; 12 horas son un buen punto de partida. Mas tiempo puede desarrollar aroma y acidez, pero una masa ya muy fermentada puede sobrefermentar: mas horas no siempre son mejores.",
+      "Precalentar: deja el pan en la nevera. Introduce la cocotte con su tapa en el horno y precalienta unos 45 minutos a 250 C, calor arriba y abajo, sin ventilador.",
+      "Desmoldar: saca el pan frio justo antes de hornear, coloca papel de horno sobre el banneton y vuelcalo con cuidado. Retira el banneton. Opcionalmente, espolvorea una capa muy fina de harina de arroz para crear contraste con la corteza.",
+      "Corte antes de hornear: con una cuchilla inclinada unos 30-45 grados, haz un corte largo, ligeramente descentrado, de unos 2/3-3/4 del diametro y 0,8-1 cm de profundidad. Haz un movimiento rapido y decidido justo antes de meterlo al horno.",
+      "Horneado tapado: introduce el pan con el papel en la cocotte caliente, tapa y hornea 20 minutos a 240 C. Manipula la cocotte con proteccion adecuada. El vapor mantiene flexible la superficie durante la expansion del pan.",
+      "Horneado destapado: retira la tapa y continua a 210-220 C durante unos 15-25 minutos, hasta una corteza de color marron intenso y uniforme. Vigila el dorado y ajusta temperatura y tiempo a tu horno.",
+      "Enfriado: saca inmediatamente la hogaza de la cocotte y dejala sobre una rejilla, sin cortar, al menos 1 h 30 min; idealmente unas 2 horas. La miga termina de estabilizarse durante el enfriado."
+    ],
+    "notes": "Hogaza en cocotte adaptable a distintas mezclas de trigo blanco e integral. Mas integral aporta sabor a cereal y fibra, suele cerrar algo la miga y puede pedir mas agua. Grandes cantidades de centeno, espelta u otros cereales requieren adaptar la receta. Los 350 g de agua son un punto de partida: sumando los 50 g de agua y 50 g de harina del cultivo, hay 400 g de agua y 550 g de harina, aproximadamente un 73 % de hidratacion real. Con experiencia puedes probar 365 g de agua anadida (75,5 % real), segun lo que admita la harina. Fermenta hasta que la masa este preparada, no solo durante un numero fijo de horas.",
+    "variants": [],
+    "updatedAt": "2026-09-14T00:00:00.000Z"
   },
   {
     "id": "masa-madre-integral-trigo",
