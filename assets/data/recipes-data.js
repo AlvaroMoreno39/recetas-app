@@ -284,7 +284,7 @@ window.RECIPES_DATA = [
     "profile": "salado",
     "difficulty": "media",
     "prepTime": 90,
-    "image": "",
+    "image": "assets/images/recipes/pasta-fresca.jpg",
     "ingredients": [
       "Por persona: 100 g de harina de trigo y aproximadamente 55-60 g de huevo sin cascara (como referencia sencilla, 1 huevo)",
       "Para 2 personas: 200 g de harina y unos 110-120 g de huevo sin cascara (aproximadamente 2 huevos)",
