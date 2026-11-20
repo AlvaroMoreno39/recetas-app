@@ -49,10 +49,10 @@ async function init() {
 }
 
 function bindEvents() {
-  const updateSearch = debounce((value) => {
+  const updateSearch = (value) => {
     state.filters.query = safeString(value);
     renderRecipes();
-  }, 140);
+  };
 
   if (el.searchInput) {
     el.searchInput.addEventListener('input', (event) => updateSearch(event.target.value));
@@ -99,7 +99,7 @@ function bindEvents() {
 
   document.addEventListener('keydown', (event) => {
     if (shouldIgnoreShortcut(event.target)) return;
-    if (event.key === '/' && el.searchInput) {
+    if (event.key === '/' && !document.querySelector('dialog[open]') && !document.querySelector('.container').hidden && el.searchInput) {
       event.preventDefault();
       el.searchInput.focus();
     }

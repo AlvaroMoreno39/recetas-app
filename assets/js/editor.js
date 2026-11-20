@@ -2,14 +2,17 @@ const sheet = $("#sheet");
 function loadEdits() {
   const recipes = new Map(state.recipes.map((r) => [r.id, r]));
   for (const item of Object.values(read("edits", {})))
-    recipes.set(item.id, normalizeRecipe(item));
+    if (item && typeof item.id === "string") recipes.set(item.id, normalizeRecipe(item));
   state.recipes = [...recipes.values()];
 }
 function editRecipe(original) {
+  const stored = original && read("edits", {})[original.id];
   const draft = original
-    ? structuredClone(original)
+    ? structuredClone(stored ? normalizeRecipe(stored) : original)
     : normalizeRecipe({ id: createId(), title: "", type: "General" });
-  let selected = 0,
+  const initialRecord = JSON.stringify(stored);
+  sheet.setAttribute("aria-label", original ? "Editar receta" : "Nueva receta");
+  let selected = Math.max(0, draft.variants.findIndex(v => v.id === active?.variant?.id)),
     dirty = false;
   const close = () => {
     if (!dirty || confirm("¿Descartar los cambios sin guardar?")) sheet.close();
@@ -240,8 +243,12 @@ function editRecipe(original) {
       }
       draft.updatedAt = new Date().toISOString();
       const edits = read("edits", {});
+      if (JSON.stringify(edits[draft.id]) !== initialRecord) {
+        alert("La receta ha cambiado en otra pestaña. Conserva tu borrador y revisa la otra versión antes de continuar.");
+        return;
+      }
       edits[draft.id] = draft;
-      save("edits", edits);
+      if (!save("edits", edits)) return;
       loadEdits();
       renderTypeFilter();
       el.typeFilter.value = state.filters.type;
@@ -320,13 +327,24 @@ function addShopping() {
     if (same) same.amount += m.amount;
     else basket.push(m || { name: line });
   }
-  save("basket", basket);
-  showShopping();
+  if (save("basket", basket)) showShopping();
 }
 function showShopping() {
   const basket = read("basket", []);
+  let revision = JSON.stringify(basket);
+  function commitBasket() {
+    if (JSON.stringify(read("basket", [])) !== revision) {
+      alert("La compra ha cambiado en otra pestaña. Revisa la lista actualizada.");
+      showShopping();
+      return false;
+    }
+    if (!save("basket", basket)) { showShopping(); return false; }
+    revision = JSON.stringify(basket);
+    return true;
+  }
   const line = (row) =>
     row.unit ? decimal(row.amount) + " " + row.unit + " " + row.name : row.name;
+  sheet.setAttribute("aria-label", "Lista de la compra");
   sheet.innerHTML =
     "<h2>Lista de la compra</h2>" +
     (basket.length
@@ -351,7 +369,7 @@ function showShopping() {
     (input) =>
       (input.onchange = () => {
         basket[input.dataset.row].checked = input.checked;
-        save("basket", basket);
+        commitBasket();
       }),
   );
   sheet.querySelectorAll("[data-act]").forEach(
@@ -361,8 +379,7 @@ function showShopping() {
         if (action === "close") sheet.close();
         if (action === "remove") {
           basket.splice(Number(i), 1);
-          save("basket", basket);
-          showShopping();
+          if (commitBasket()) showShopping();
         }
         if (action === "copy") {
           try {
@@ -377,3 +394,19 @@ function showShopping() {
   if (!sheet.open) sheet.showModal();
 }
 $("#shopping").onclick = showShopping;
+
+// Preserve the original strings, even if an older entry cannot be parsed.
+$("#backup").onclick = () => {
+  try {
+    const entries = Object.fromEntries(Object.keys(localStorage)
+      .filter(key => key.startsWith("recetario:"))
+      .map(key => [key, localStorage.getItem(key)]));
+    const snapshot = {format: "mis-recetas", version: 1, createdAt: new Date().toISOString(), entries};
+    const url = URL.createObjectURL(new Blob([JSON.stringify(snapshot, null, 2)], {type: "application/json"}));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "mis-recetas-" + snapshot.createdAt.replaceAll(":", "-") + ".json";
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch { alert("No se ha podido exportar el almacenamiento de este navegador."); }
+};

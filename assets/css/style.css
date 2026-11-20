@@ -313,3 +313,12 @@ progress {
     font-size: 1.45rem;
   }
 }
+.check, summary {
+  min-height: 44px;
+}
+summary {
+  padding-block: .6rem;
+}
+#page, dialog {
+  overflow-wrap: anywhere;
+}

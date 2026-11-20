@@ -1,20 +1,29 @@
 const $ = (selector) => document.querySelector(selector);
 const html = escapeHtml;
 const attr = (value) => html(value).replaceAll('"', "&quot;");
-const memory = new Map();
-function read(key, fallback, storage = localStorage) {
+function read(key, fallback, storageName = "localStorage") {
   try {
-    return JSON.parse(storage.getItem("recetario:" + key)) ?? fallback;
-  } catch {
-    return memory.get(key) ?? fallback;
-  }
+    const value = JSON.parse(window[storageName].getItem("recetario:" + key));
+    if (value === null || typeof value !== typeof fallback ||
+        Array.isArray(value) !== Array.isArray(fallback)) return fallback;
+    return value;
+  } catch { return fallback; }
 }
-function save(key, value, storage = localStorage) {
-  memory.set(key, value);
+function save(key, value, storageName = "localStorage") {
   try {
-    storage.setItem("recetario:" + key, JSON.stringify(value));
+    const storage = window[storageName];
+    const name = "recetario:" + key;
+    const previous = storage.getItem(name);
+    if (previous !== null) {
+      const parsed = JSON.parse(previous);
+      if (parsed === null || typeof parsed !== typeof value ||
+          Array.isArray(parsed) !== Array.isArray(value)) throw new Error("Formato anterior desconocido");
+    }
+    storage.setItem(name, JSON.stringify(value));
+    return true;
   } catch {
-    alert("El navegador no ha podido guardar los cambios.");
+    alert("No se pudo guardar. Conserva esta pestaña y exporta una copia antes de liberar espacio o reparar los datos.");
+    return false;
   }
 }
 function recipeLink(id, variant, cooking) {
@@ -44,8 +53,9 @@ let active, wake, timerInterval;
 async function keepAwake() {
   if (!active?.cooking || document.hidden || !navigator.wakeLock) return;
   try {
+    const owner = active;
     const lock = await navigator.wakeLock.request("screen");
-    if (active?.cooking) wake = lock;
+    if (active === owner && !document.hidden) wake = lock;
     else await lock.release();
   } catch {}
 }
@@ -65,7 +75,10 @@ function route() {
   $(".container").hidden = !!recipe;
   $("#page").hidden = !recipe;
   document.title = recipe ? recipe.title + " · Mis recetas" : "Mis recetas";
-  if (!recipe) return;
+  if (!recipe) {
+    el.detailBody.replaceChildren();
+    return;
+  }
   const params = new URLSearchParams(query);
   const variant =
     recipe.variants.find((v) => v.id === params.get("variante")) ||
@@ -77,9 +90,24 @@ function route() {
   const session = read(
     key,
     { scale: 1, checked: [], step: 0, done: [], timers: [] },
-    sessionStorage,
+    "sessionStorage",
   );
   const steps = getDetailSteps(recipe, variant);
+  session.step = Number.isInteger(session.step) ? session.step : 0;
+  if (!Number.isFinite(session.scale) || session.scale < .01 || session.scale > 100) session.scale = 1;
+  for (const field of ["done", "checked", "timers"]) {
+    if (!Array.isArray(session[field])) session[field] = [];
+  }
+  session.timers = session.timers.filter(timer => timer && Number.isFinite(timer.left) &&
+    (timer.end === null || Number.isFinite(timer.end)));
+  // Index-based progress only belongs to the instructions that produced it.
+  const content = JSON.stringify([steps, getDetailIngredients(recipe, variant)]);
+  if (session.content && session.content !== content) {
+    session.step = 0;
+    session.checked = [];
+    session.done = [];
+  }
+  session.content = content;
   session.step = Math.max(0, Math.min(session.step, steps.length - 1));
   active = {
     recipe,
@@ -97,7 +125,7 @@ function route() {
   keepAwake();
 }
 function persist() {
-  save(active.key, active.session, sessionStorage);
+  save(active.key, active.session, "sessionStorage");
 }
 function button(label, action, primary = false) {
   return (
@@ -122,7 +150,7 @@ function measurement(line) {
   );
 }
 const decimal = (n) =>
-  Number(n.toFixed(3)).toLocaleString("es-ES", { maximumFractionDigits: 3 });
+  Number(n.toFixed(3)).toLocaleString("es-ES", { maximumFractionDigits: 3, useGrouping: false });
 function ingredients() {
   const { recipe, variant, session } = active;
   return getDetailIngredients(recipe, variant).map((line) => {
@@ -154,13 +182,13 @@ function draw() {
     const step = steps[session.step];
     const matches = [
       ...step.matchAll(
-        /(?<![\d.,/–-])(\d+)\s*(minutos?|min|horas?|h|segundos?|seg)\b/gi,
+        /(\d+)\s*(minutos?|min|horas?|h|segundos?|seg)\b/gi,
       ),
-    ].filter((m) => !/(?:\d\s*[-–a/]\s*)$/.test(step.slice(0, m.index)));
+    ].filter((m) => !/(?:[\d.,/–-]|\d\s*[-–a/]\s*)$/.test(step.slice(0, m.index)));
     body.innerHTML =
       '<section class="cooking"><p>' +
       html(variant?.title || recipe.type) +
-      '</p><progress value="' +
+      '</p><progress aria-label="Progreso de la preparación" value="' +
       (session.step + 1) +
       '" max="' +
       steps.length +
@@ -346,7 +374,8 @@ el.detailBody.onclick = (e) => {
         )
       )
         return;
-      sessionStorage.removeItem("recetario:" + active.key);
+      try { sessionStorage.removeItem("recetario:" + active.key); }
+      catch { alert("No se pudo restablecer la sesión."); return; }
     case "exit":
       location.hash = recipeLink(recipe.id, variant?.id);
       break;
@@ -410,23 +439,23 @@ function startTimer(seconds) {
 function tick() {
   const box = $("#timers");
   if (!box || !active?.cooking) return;
-  const markup = active.session.timers
-    .map((t, i) => {
-      const seconds = Math.max(
-        0,
-        Math.ceil((t.end ? t.end - Date.now() : t.left) / 1000),
-      );
-      return (
-        '<div class="actions">' +
-        (seconds
-          ? Math.floor(seconds / 60) + " min " + (seconds % 60) + " s"
-          : '<strong role="alert">Tiempo cumplido</strong>') +
-        " " +
-        (seconds ? button(t.end ? "Pausar" : "Reanudar", "pause:" + i) : "") +
-        button("Cancelar", "cancel:" + i) +
-        "</div>"
-      );
-    })
-    .join("");
-  if (box.innerHTML !== markup) box.innerHTML = markup;
+  active.session.timers.forEach((timer, i) => {
+    const remaining = timer.end === null ? timer.left : timer.end - Date.now();
+    const seconds = Math.max(0, Math.ceil(remaining / 1000));
+    let row = box.children[i];
+    if (!row) {
+      row = document.createElement("div");
+      row.className = "actions";
+      row.innerHTML = '<span></span>' + button("Pausar", "pause:" + i) + button("Cancelar", "cancel:" + i);
+      box.append(row);
+    }
+    const [time, pause] = row.children;
+    if (!seconds) time.setAttribute("role", "alert");
+    else time.removeAttribute("role");
+    const label = seconds ? Math.floor(seconds / 60) + " min " + seconds % 60 + " s" : "Tiempo cumplido";
+    if (time.textContent !== label) time.textContent = label;
+    pause.hidden = !seconds;
+    pause.textContent = timer.end === null ? "Reanudar" : "Pausar";
+  });
+  while (box.children.length > active.session.timers.length) box.lastElementChild.remove();
 }

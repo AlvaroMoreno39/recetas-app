@@ -32,7 +32,7 @@
           <input id="searchInput" type="search" placeholder="Buscar recetas o ingredientes..." />
         </label>
 
-        <div id="chips"></div><button id="filters">Filtros</button><dialog id="filterBox"><h2>Filtros</h2><div class="filters-row">
+        <div id="chips"></div><button id="filters">Filtros</button><dialog id="filterBox" aria-label="Filtros"><h2>Filtros</h2><div class="filters-row">
           <label>
             <span>Tipo</span>
             <select id="typeFilter">
@@ -102,6 +102,7 @@
       </main>
 
       <footer class="site-footer">
+        <button type="button" id="backup">Exportar copia de mis datos</button>
         <p>Creado por Álvaro Moreno Lumbreras.</p>
         <p>Copyright © 2026. Todos los derechos reservados.</p>
       </footer>
