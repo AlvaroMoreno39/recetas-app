@@ -1,24 +1,3 @@
-Guarda aqui las imagenes que quieras usar en la web.
+El catálogo identifica cada preparación con su ruta en `recipes/`. Los JPEG originales siguen disponibles como respaldo. Para las ocho recetas actuales, la web sirve las imágenes de `responsive/edicion2/` en 480 y 880 píxeles y utiliza el JPEG si falla el recurso adaptativo.
 
-Estructura recomendada:
-
-- `assets/images/recipes/`
-
-Ejemplo:
-
-- archivo real: `assets/images/recipes/bizcocho-platano.jpg`
-- valor en `assets/data/recipes.json`:
-
-```json
-{
-  "image": "assets/images/recipes/bizcocho-platano.jpg"
-}
-```
-
-Consejos:
-
-- Usa nombres simples: minusculas, guiones y sin espacios.
-- Mejor `jpg`, `png` o `webp`.
-- Si cambias una imagen, haz `commit` igual que con el JSON para que se publique en GitHub Pages.
-
-Las ocho fotografías del catálogo tienen copias WebP de 480 y 960 píxeles en `responsive/`, generadas a partir de los JPEG de `recipes/` con la orientación corregida y la proporción original. Si reemplazas uno de esos originales, regenera sus dos copias antes de publicar. Las fotos nuevas se muestran directamente desde su ruta en el JSON; para servir también sus copias adaptativas, incluye la ruta en `optimizedPhotos` en `assets/js/app.js`.
+Las ocho imágenes de esta edición fueron generadas con ImageGen para Mis recetas, a partir de la descripción e ingredientes de cada preparación. Representan los dos bizcochos (manzana y plátano), la focaccia con romero, la hogaza, el cultivo de masa madre integral, la pizza en bandeja, la pasta fresca al huevo y la carbonara con guanciale. Son representaciones editoriales de las recetas. Las versiones WebP de la edición fotográfica anterior están en `responsive/`.

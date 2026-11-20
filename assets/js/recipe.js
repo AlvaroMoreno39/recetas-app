@@ -22,18 +22,18 @@ function renderDetail(recipe, variant) {
   const detail = variant || recipe;
   const body = el.detailBody;
   body.replaceChildren();
-  if (recipe.notes) body.append(textElement('p', recipe.notes));
+  document.querySelector('#intro').textContent = recipe.notes;
 
-  const photos = document.createElement('div');
-  photos.className = 'photos';
+  const photos = document.querySelector('.recipe-lead .photos');
+  photos.replaceChildren();
   for (const src of getDetailImages(recipe, variant)) {
     const img = document.createElement('img');
     img.className = 'detail-img';
     img.fetchPriority = photos.childElementCount ? 'auto' : 'high';
-    setPhoto(img, src, variant?.title || recipe.title, '(max-width: 1000px) 92vw, 920px');
+    setPhoto(img, src, variant?.title || recipe.title, '(max-width: 859px) 92vw, (max-width: 1360px) 53vw, 716px');
     photos.append(img);
   }
-  body.append(photos);
+
   if (recipe.variants.length > 1) {
     const nav = document.createElement('nav');
     nav.className = 'variant-switcher';

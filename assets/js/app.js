@@ -228,7 +228,7 @@ function renderRecipes() {
     thumb.loading = index === 0 ? 'eager' : 'lazy';
     if (index === 0) thumb.fetchPriority = 'high';
     setPhoto(thumb, recipe.image, recipe.title,
-      '(max-width: 640px) 92vw, (max-width: 980px) 45vw, (max-width: 1280px) 30vw, 375px');
+      '(max-width: 640px) 92vw, (max-width: 980px) 45vw, (max-width: 1450px) 30vw, 432px');
 
     const title = node.querySelector('.title');
     if (title) title.textContent = recipe.title;
@@ -586,9 +586,9 @@ function setPhoto(img, src, title, sizes) {
   img.draggable = false;
   img.decoding = 'async';
   if (optimizedPhotos.has(src)) {
-    const base = src.replace('/recipes/', '/responsive/').replace(/\.jpg$/, '');
+    const base = src.replace('/recipes/', '/responsive/edicion2/').replace(/\.jpg$/, '');
     img.sizes = sizes;
-    img.srcset = base + '-480.webp 480w, ' + base + '-960.webp 960w';
+    img.srcset = base + '-480.webp 480w, ' + base + '-880.webp 880w';
   }
   img.onerror = () => {
     if (img.hasAttribute('srcset')) {
