@@ -1,17 +1,17 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="only light" />
-    <title>Recetas Personales</title>
+    <title>Mis recetas</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/style.css?v=20260914h" />
+    <link rel="stylesheet" href="assets/css/style.css?v=20261120" />
   </head>
   <body>
     <div class="app-bg" aria-hidden="true"></div>
@@ -19,20 +19,20 @@
     <div class="container">
       <header class="topbar">
         <div class="brand">
-          <p class="kicker">Recetario personal</p>
+          
           <h1>Mis recetas</h1>
-          <p class="subtitle">Recetas claras, rapidas de encontrar y listas para cocinar sin complicaciones.</p>
+          <p class="subtitle">Tu recetario personal, siempre a mano.</p>
         </div>
 
-      </header>
+      <nav><button id="shopping">Lista de la compra</button> <button class="primary" id="newRecipe">Nueva receta</button></nav></header>
 
-      <section class="search-panel" aria-label="Busqueda y filtros">
+      <section class="search-panel" aria-label="Búsqueda y filtros">
         <label class="search-field">
           <span>Buscar receta</span>
-          <input id="searchInput" type="search" placeholder="Titulo, ingrediente, tipo, sabor, dificultad o preparacion" />
+          <input id="searchInput" type="search" placeholder="Buscar recetas o ingredientes..." />
         </label>
 
-        <div class="filters-row">
+        <div id="chips"></div><button id="filters">Filtros</button><dialog id="filterBox"><h2>Filtros</h2><div class="filters-row">
           <label>
             <span>Tipo</span>
             <select id="typeFilter">
@@ -41,10 +41,10 @@
           </label>
 
           <label>
-            <span>Duracion</span>
+            <span>Duración</span>
             <select id="timeFilter">
               <option value="all">Cualquiera</option>
-              <option value="short">Rapida</option>
+              <option value="short">Rápida</option>
               <option value="medium">Media</option>
               <option value="long">Lenta</option>
               <option value="unknown">Sin definir</option>
@@ -66,7 +66,7 @@
             <select id="difficultyFilter">
               <option value="all">Todas</option>
               <option value="baja">Sencilla</option>
-              <option value="media">Tecnica</option>
+              <option value="media">Técnica</option>
               <option value="alta">Experta</option>
             </select>
           </label>
@@ -74,22 +74,22 @@
           <label>
             <span>Ordenar por</span>
             <select id="sortSelect">
-              <option value="updated_desc">Mas recientes</option>
-              <option value="updated_asc">Mas antiguas</option>
+              <option value="updated_desc">Más recientes</option>
+              <option value="updated_asc">Más antiguas</option>
               <option value="title_asc">Nombre A-Z</option>
               <option value="title_desc">Nombre Z-A</option>
               <option value="prep_asc">Menos tiempo</option>
-              <option value="prep_desc">Mas tiempo</option>
+              <option value="prep_desc">Más tiempo</option>
             </select>
           </label>
         </div>
 
-        <div id="activeFilters" class="active-filters" aria-live="polite"></div>
+        <button onclick="clearFilters()">Limpiar filtros</button> <button class="primary" onclick="filterBox.close()">Ver resultados</button></dialog><div id="activeFilters" class="active-filters" aria-live="polite"></div>
       </section>
 
       <section class="status-row" aria-live="polite">
         <p id="resultsLabel" class="results-label">0 recetas</p>
-        <button id="btnClearFilters" class="text-btn" type="button" hidden>Resetear filtros</button>
+        <button id="btnClearFilters" class="text-btn" type="button" hidden>Limpiar filtros</button>
       </section>
 
       <main>
@@ -97,7 +97,7 @@
 
         <section id="empty" class="empty" hidden>
           <h2>No hay recetas para mostrar</h2>
-          <p>Ajusta los filtros o prueba otra busqueda para encontrar recetas.</p>
+          <p>Ajusta los filtros o prueba otra búsqueda para encontrar recetas.</p>
         </section>
       </main>
 
@@ -107,23 +107,10 @@
       </footer>
     </div>
 
-    <dialog id="detailDialog" class="dialog">
-      <article class="panel panel-detail">
-        <header class="panel-head">
-          <h2 id="detailTitle">Detalle</h2>
-          <button class="btn btn-soft icon-btn" type="button" data-close-detail aria-label="Cerrar">×</button>
-        </header>
-
-        <section id="detailBody"></section>
-
-        <footer class="panel-foot panel-foot-end">
-          <button class="btn btn-soft" type="button" data-close-detail>Cerrar</button>
-        </footer>
-      </article>
-    </dialog>
-
+    <main id="page" hidden><a href="#">← Mis recetas</a><h1 id="detailTitle" tabindex="-1"></h1><section id="detailBody"></section></main>
+    <dialog id="sheet"></dialog>
     <template id="cardTpl">
-      <article class="card reveal-up">
+      <a class="card">
         <div class="thumb-wrap"><img class="thumb" alt="Imagen de receta" loading="lazy" decoding="async" /></div>
         <div class="card-body">
           <h3 class="title"></h3>
@@ -136,15 +123,12 @@
           <p class="desc"></p>
         </div>
 
-        <footer class="card-actions">
-          <button type="button" class="btn btn-soft btn-view">Ver</button>
-        </footer>
-      </article>
+      </a>
     </template>
 
     <script src="assets/data/recipes-data.js?v=20260914o" defer></script>
-    <script src="assets/js/app.js?v=20260914o" defer></script>
-  </body>
+    <script src="assets/js/app.js?v=20261120" defer></script>
+  <script defer src="assets/js/kitchen.js"></script><script defer src="assets/js/editor.js"></script></body>
 </html>
 
 

@@ -24,13 +24,12 @@ const el = {
   activeFilters: document.getElementById('activeFilters'),
   resultsLabel: document.getElementById('resultsLabel'),
   btnClearFilters: document.getElementById('btnClearFilters'),
-  detailDialog: document.getElementById('detailDialog'),
   detailTitle: document.getElementById('detailTitle'),
   detailBody: document.getElementById('detailBody'),
   cardTpl: document.getElementById('cardTpl'),
 };
 
-void startApp();
+window.addEventListener('DOMContentLoaded', startApp);
 
 async function startApp() {
   try {
@@ -42,9 +41,11 @@ async function startApp() {
 
 async function init() {
   state.recipes = await loadRecipes();
+  loadEdits();
   bindEvents();
   renderTypeFilter();
   renderRecipes();
+  route();
 }
 
 function bindEvents() {
@@ -96,14 +97,6 @@ function bindEvents() {
     el.btnClearFilters.addEventListener('click', clearFilters);
   }
 
-  document.querySelectorAll('[data-close-detail]').forEach((button) => {
-    button.addEventListener('click', closeDetail);
-  });
-
-  if (el.grid) {
-    el.grid.addEventListener('click', onGridClick);
-  }
-
   document.addEventListener('keydown', (event) => {
     if (shouldIgnoreShortcut(event.target)) return;
     if (event.key === '/' && el.searchInput) {
@@ -150,6 +143,7 @@ function normalizeRecipe(item) {
 
   return {
     id: typeof item.id === 'string' ? item.id : createId(),
+    tags: Array.isArray(item.tags) ? item.tags : [],
     title: safeString(item.title),
     type: inferredType || 'General',
     profile: normalizeProfile(inferredProfile),
@@ -157,6 +151,9 @@ function normalizeRecipe(item) {
     prepTime: positiveNumberOrNull(item.prepTime),
     image: images[0] || '',
     images,
+    yields: safeString(item.yields),
+    times: item.times || {},
+    stepDetails: Array.isArray(item.stepDetails) ? item.stepDetails : [],
     ingredients: Array.isArray(item.ingredients) ? item.ingredients.map(safeString).filter(Boolean) : [],
     steps: Array.isArray(item.steps) ? item.steps.map(safeString).filter(Boolean) : [],
     notes: safeString(item.notes),
@@ -179,6 +176,9 @@ function normalizeVariant(item) {
     images,
     summary: safeString(item.summary),
     learns: Array.isArray(item.learns) ? item.learns.map(safeString).filter(Boolean) : [],
+    yields: safeString(item.yields),
+    times: item.times || {},
+    stepDetails: Array.isArray(item.stepDetails) ? item.stepDetails : [],
     ingredients: Array.isArray(item.ingredients) ? item.ingredients.map(safeString).filter(Boolean) : [],
     steps: Array.isArray(item.steps) ? item.steps.map(safeString).filter(Boolean) : [],
   };
@@ -205,6 +205,7 @@ function getProcessedRecipes() {
         recipe.profile,
         recipe.difficulty,
         recipe.notes,
+        (recipe.tags || []).join(' '),
         recipe.ingredients.join(' '),
         recipe.steps.join(' '),
         recipe.variants.map((variant) => [variant.label, variant.title, variant.summary, variant.learns.join(' '), variant.ingredients.join(' '), variant.steps.join(' ')].join(' ')).join(' '),
@@ -224,7 +225,7 @@ function renderRecipes() {
   const list = getProcessedRecipes();
   const fragment = document.createDocumentFragment();
 
-  animateGridRefresh();
+  renderChips();
   el.grid.innerHTML = '';
   if (el.empty) el.empty.hidden = list.length > 0;
 
@@ -234,7 +235,7 @@ function renderRecipes() {
     const node = createCardNode();
     if (!node) return;
 
-    node.dataset.id = recipe.id;
+    node.href = recipeLink(recipe.id);
     node.style.animationDelay = `${Math.min(index * 35, 220)}ms`;
 
     const thumb = node.querySelector('.thumb');
@@ -259,10 +260,10 @@ function renderRecipes() {
     setTagContent(tagType, recipe.type);
 
     const tagDuration = node.querySelector('.tag-duration');
-    setTagContent(tagDuration, isProgressiveRecipe ? '' : formatDurationBand(primaryDetail.prepTime));
+    setTagContent(tagDuration, isProgressiveRecipe ? '' : (primaryDetail.prepTime ? primaryDetail.prepTime + ' min' : ''));
 
     const tagProfile = node.querySelector('.tag-profile');
-    setTagContent(tagProfile, formatProfile(recipe.profile));
+    setTagContent(tagProfile, (recipe.variants.length ? recipe.variants.length + " variantes" : ""));
 
     const tagDifficulty = node.querySelector('.tag-difficulty');
     setTagContent(tagDifficulty, isProgressiveRecipe ? '' : formatDifficulty(primaryDetail.difficulty || recipe.difficulty));
@@ -359,156 +360,6 @@ function buildCardDescription(recipe) {
   return truncate(recipe.ingredients.slice(0, 3).join(', '), 110) || 'Sin descripcion';
 }
 
-function openDetail(recipeId) {
-  if (!el.detailTitle || !el.detailBody) return;
-
-  const recipe = state.recipes.find((item) => item.id === recipeId);
-  if (!recipe) return;
-
-  el.detailTitle.textContent = recipe.title;
-  renderRecipeDetail(recipe, 0, 0);
-
-  showDialog(el.detailDialog);
-}
-
-function renderRecipeDetail(recipe, variantIndex, imageIndex = 0) {
-  if (!el.detailBody) return;
-
-  const variants = Array.isArray(recipe.variants) ? recipe.variants : [];
-  const selectedVariant = variants[variantIndex] || null;
-  const detail = selectedVariant || getPrimaryDetail(recipe);
-  const imageList = getDetailImages(recipe, selectedVariant);
-  const selectedImage = imageList[imageIndex] || imageList[0] || createPlaceholderImage(recipe.title);
-  const ingredients = getDetailIngredients(recipe, selectedVariant).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
-  const steps = getDetailSteps(recipe, selectedVariant).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
-  const learns = selectedVariant?.learns?.length
-    ? `
-      <section class="detail-section">
-        <h3>Que se aprende</h3>
-        <ul class="list detail-list">${selectedVariant.learns.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
-      </section>
-    `
-    : '';
-  const variantSelector =
-    variants.length > 0
-      ? `
-        <section class="variant-switcher" aria-label="Versiones de la receta">
-          ${variants
-            .map(
-              (variant, index) => `
-                <button
-                  type="button"
-                  class="btn ${index === variantIndex ? 'btn-primary' : 'btn-soft'} variant-btn"
-                  data-variant-index="${index}"
-                >
-                  ${escapeHtml(variant.label)}
-                </button>
-              `
-            )
-            .join('')}
-        </section>
-      `
-      : '';
-  const gallery =
-    imageList.length > 1
-      ? `
-        <div class="detail-gallery" aria-label="Galeria de imagenes">
-          ${imageList
-            .map(
-              (image, index) => `
-                <button
-                  type="button"
-                  class="detail-thumb-btn ${index === imageIndex ? 'is-active' : ''}"
-                  data-image-index="${index}"
-                  aria-label="Ver imagen ${index + 1}"
-                >
-                  <img src="${escapeAttribute(image)}" alt="${escapeAttribute(`${recipe.title} ${index + 1}`)}" class="detail-thumb-img" />
-                </button>
-              `
-            )
-            .join('')}
-        </div>
-      `
-      : '';
-
-  el.detailBody.innerHTML = `
-    <section class="detail-hero">
-      <div class="detail-media${recipe.id === 'pizza-casera-fermentacion-lenta' ? ' detail-media-pizza' : ''}">
-        <img src="${escapeAttribute(selectedImage)}" alt="${escapeAttribute(
-          recipe.title
-        )}" class="detail-img" />
-      </div>
-      ${gallery}
-      <div class="detail-meta">
-        <span class="detail-pill">${escapeHtml(recipe.type)}</span>
-        <span class="detail-pill">${escapeHtml(formatDurationBand(detail.prepTime))}</span>
-        <span class="detail-pill">${escapeHtml(formatProfile(recipe.profile))}</span>
-        <span class="detail-pill">${escapeHtml(formatDifficulty(detail.difficulty || recipe.difficulty))}</span>
-      </div>
-    </section>
-
-    ${variantSelector}
-
-    <section class="detail-section">
-      <h3>${escapeHtml(selectedVariant?.title || 'Descripcion')}</h3>
-      <p class="detail-text">${escapeHtml(selectedVariant?.summary || recipe.notes || 'Sin descripcion adicional.')}</p>
-    </section>
-
-    ${learns}
-
-    <section class="detail-section">
-      <h3>Ingredientes</h3>
-      <ul class="list detail-list">${ingredients}</ul>
-    </section>
-
-    <section class="detail-section">
-      <h3>Pasos</h3>
-      <ol class="list detail-list">${steps}</ol>
-    </section>
-  `;
-
-  const detailImg = el.detailBody.querySelector('.detail-img');
-  if (detailImg) {
-    detailImg.referrerPolicy = 'no-referrer';
-    detailImg.addEventListener(
-      'error',
-      () => {
-        detailImg.src = createPlaceholderImage(recipe.title);
-      },
-      { once: true }
-    );
-  }
-
-  el.detailBody.querySelectorAll('[data-variant-index]').forEach((button) => {
-    button.addEventListener('click', () => {
-      renderRecipeDetail(recipe, Number(button.dataset.variantIndex || 0), 0);
-    });
-  });
-
-  el.detailBody.querySelectorAll('[data-image-index]').forEach((button) => {
-    button.addEventListener('click', () => {
-      renderRecipeDetail(recipe, variantIndex, Number(button.dataset.imageIndex || 0));
-    });
-  });
-}
-
-function closeDetail() {
-  closeDialog(el.detailDialog);
-}
-
-function onGridClick(event) {
-  const button = event.target.closest('button');
-  const card = event.target.closest('.card');
-  if (!button || !card) return;
-
-  const recipeId = card.dataset.id;
-  if (!recipeId) return;
-
-  if (button.classList.contains('btn-view')) {
-    openDetail(recipeId);
-  }
-}
-
 function clearFilters() {
   state.filters.query = '';
   state.filters.type = 'all';
@@ -536,11 +387,11 @@ function getRecipeDetailSets(recipe) {
 }
 
 function getDetailIngredients(recipe, variant) {
-  return variant?.ingredients?.length ? variant.ingredients : recipe.ingredients;
+  return (variant || recipe).ingredients;
 }
 
 function getDetailSteps(recipe, variant) {
-  return variant?.steps?.length ? variant.steps : recipe.steps;
+  return (variant || recipe).steps;
 }
 
 function getDetailImages(recipe, variant) {
@@ -638,9 +489,9 @@ function normalizeDifficulty(value) {
 function formatDifficulty(value) {
   const normalized = normalizeDifficulty(value);
   if (normalized === 'baja') return 'Sencilla';
-  if (normalized === 'media') return 'Tecnica';
+  if (normalized === 'media') return 'Técnica';
   if (normalized === 'alta') return 'Experta';
-  return 'Tecnica';
+  return 'Técnica';
 }
 
 function inferDifficultyFromLegacy(item) {
@@ -764,60 +615,8 @@ function createId() {
   });
 }
 
-function showDialog(dialog) {
-  if (!dialog) return;
-  if (typeof dialog.showModal === 'function') {
-    dialog.showModal();
-    clearDialogFocus();
-    return;
-  }
-  dialog.setAttribute('open', 'open');
-  clearDialogFocus();
-}
-
-function closeDialog(dialog) {
-  if (!dialog) return;
-  if (typeof dialog.close === 'function' && dialog.open) {
-    dialog.close();
-    return;
-  }
-  dialog.removeAttribute('open');
-}
-
-function clearDialogFocus() {
-  requestAnimationFrame(() => {
-    const active = document.activeElement;
-    if (active && typeof active.blur === 'function') {
-      active.blur();
-    }
-  });
-}
-
 function createCardNode() {
-  if (el.cardTpl?.content?.firstElementChild) {
-    return el.cardTpl.content.firstElementChild.cloneNode(true);
-  }
-
-  const wrapper = document.createElement('article');
-  wrapper.className = 'card reveal-up';
-  wrapper.innerHTML = `
-    <div class="thumb-wrap"><img class="thumb" alt="Imagen de receta" loading="lazy" decoding="async" /></div>
-    <div class="card-body">
-      <h3 class="title"></h3>
-      <div class="card-tags">
-        <span class="tag card-tag tag-type"></span>
-        <span class="tag card-tag tag-duration"></span>
-        <span class="tag card-tag tag-profile"></span>
-        <span class="tag card-tag tag-difficulty"></span>
-      </div>
-      <p class="desc"></p>
-    </div>
-    <footer class="card-actions">
-      <button type="button" class="btn btn-soft btn-view">Ver</button>
-    </footer>
-  `;
-
-  return wrapper;
+  return el.cardTpl.content.firstElementChild.cloneNode(true);
 }
 
 function seed() {
