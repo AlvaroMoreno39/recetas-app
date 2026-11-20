@@ -269,16 +269,29 @@ dialog {
 dialog::backdrop {
   background: #29251f66;
 }
-.filters-row,
-fieldset {
+.filters-row {
   display: grid;
   gap: 0.65rem;
   margin: 1rem 0;
 }
-fieldset {
-  border: 1px solid var(--line);
-  min-width: 0;
+dialog[open] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
+html:has(dialog[open]) { overflow: hidden; }
+.dialog-head, .dialog-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  flex-shrink: 0;
+}
+.dialog-head h2 { font-size: 1.55rem; margin: 0; }
+.dialog-head button { min-width: 44px; font-size: 1.3rem; padding: .2rem; }
+.dialog-scroll { overflow-y: auto; min-height: 0; overscroll-behavior: contain; padding: .3rem; }
+.dialog-foot { justify-content: flex-end; flex-wrap: wrap; }
+
 progress {
   width: 100%;
   accent-color: var(--olive);

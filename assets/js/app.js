@@ -42,7 +42,6 @@ async function startApp() {
 
 async function init() {
   state.recipes = await loadRecipes();
-  document.querySelector("#newRecipe").disabled = false;
   bindEvents();
   renderTypeFilter();
   renderRecipes();
@@ -59,41 +58,39 @@ function bindEvents() {
     el.searchInput.addEventListener('input', (event) => updateSearch(event.target.value));
   }
 
-  if (el.typeFilter) {
-    el.typeFilter.addEventListener('change', (event) => {
-      state.filters.type = event.target.value;
-      renderRecipes();
+  const filterBox = document.querySelector('#filterBox');
+  const controls = {
+    type: el.typeFilter, duration: el.timeFilter, profile: el.profileFilter,
+    difficulty: el.difficultyFilter, sort: el.sortSelect,
+  };
+  document.querySelector('#filters').onclick = () => {
+    for (const [key, select] of Object.entries(controls)) select.value = state.filters[key];
+    filterBox.showModal();
+  };
+  filterBox.addEventListener('close', () => document.querySelector('#filters').focus({preventScroll: true}));
+  document.querySelector('#applyFilters').onclick = () => {
+    for (const [key, select] of Object.entries(controls)) state.filters[key] = select.value;
+    renderRecipes();
+    filterBox.close();
+  };
+  document.querySelector('#resetFilters').onclick = () => {
+    clearFilters();
+    filterBox.close();
+  };
+  for (const dialog of document.querySelectorAll('dialog')) {
+    dialog.querySelector('[data-dismiss]').onclick = () => dialog.close();
+    function outside(event) {
+      const box = dialog.getBoundingClientRect();
+      return event.target === dialog && (event.clientX < box.left || event.clientX >= box.right ||
+        event.clientY < box.top || event.clientY >= box.bottom);
+    }
+    let startedOutside = false;
+    dialog.addEventListener('pointerdown', event => { startedOutside = outside(event); });
+    dialog.addEventListener('click', event => {
+      if (startedOutside && outside(event)) dialog.close();
+      startedOutside = false;
     });
   }
-
-  if (el.timeFilter) {
-    el.timeFilter.addEventListener('change', (event) => {
-      state.filters.duration = event.target.value;
-      renderRecipes();
-    });
-  }
-
-  if (el.profileFilter) {
-    el.profileFilter.addEventListener('change', (event) => {
-      state.filters.profile = event.target.value;
-      renderRecipes();
-    });
-  }
-
-  if (el.difficultyFilter) {
-    el.difficultyFilter.addEventListener('change', (event) => {
-      state.filters.difficulty = event.target.value;
-      renderRecipes();
-    });
-  }
-
-  if (el.sortSelect) {
-    el.sortSelect.addEventListener('change', (event) => {
-      state.filters.sort = event.target.value;
-      renderRecipes();
-    });
-  }
-
   if (el.btnClearFilters) {
     el.btnClearFilters.addEventListener('click', clearFilters);
   }
@@ -322,13 +319,6 @@ function hasActiveFilters() {
     state.filters.difficulty !== 'all' ||
     state.filters.sort !== 'updated_desc'
   );
-}
-
-function animateGridRefresh() {
-  if (!el.grid) return;
-  el.grid.classList.remove('grid-refresh');
-  el.grid.offsetHeight;
-  el.grid.classList.add('grid-refresh');
 }
 
 function buildCardDescription(recipe) {
@@ -572,14 +562,6 @@ function createPlaceholderImage(title) {
   `;
 
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-}
-
-function debounce(fn, delay) {
-  let timer = null;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
-  };
 }
 
 function shouldIgnoreShortcut(target) {

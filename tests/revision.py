@@ -3,19 +3,12 @@ import json
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from tempfile import TemporaryDirectory
-from subprocess import run
-from shutil import which, copytree, copy
+from shutil import which
 from threading import Thread
 from playwright.sync_api import sync_playwright
 
 root = Path(__file__).resolve().parents[1]
-sandbox = TemporaryDirectory()
-site = Path(sandbox.name)
-copytree(root / "assets", site / "assets")
-copytree(root / "tools", site / "tools")
-copy(root / "index.html", site)
-server = ThreadingHTTPServer(("127.0.0.1", 0), partial(SimpleHTTPRequestHandler, directory=site))
+server = ThreadingHTTPServer(("127.0.0.1", 0), partial(SimpleHTTPRequestHandler, directory=root))
 Thread(target=server.serve_forever, daemon=True).start()
 url = f"http://127.0.0.1:{server.server_port}/"
 with sync_playwright() as pw:
@@ -46,51 +39,17 @@ with sync_playwright() as pw:
         page.locator('[data-act="cancel:0"]').tap()
         page.locator('[data-act=exit]').tap()
         assert page.locator("[data-item]").first.is_checked()
-    page.locator("[data-act=edit]").tap()
-    assert page.locator('#versions button[aria-pressed=true]').inner_text().startswith('Nivel 2')
-    page.locator('[data-act=duplicate]').tap()
-    with page.expect_download() as download:
-        page.get_by_text("Descargar receta JSON", exact=True).tap()
-    recipe_file = site / "descarga.json"
-    download.value.save_as(recipe_file)
-    page.get_by_text("Cancelar", exact=True).tap()
-    assert page.locator(".variant-switcher button").count() == 2
-    assert page.evaluate("localStorage.getItem('recetario:edits')") is None
-    run(["node", site / "tools/incorporar-receta.mjs", recipe_file], check=True)
-    page.reload(wait_until="domcontentloaded")
-    page.locator(".variant-switcher button").nth(2).wait_for()
-    other = browser.new_page()
-    other.goto(url + "#/recetas/focaccia-artesanal")
-    assert other.locator(".variant-switcher button").count() == 3
-    before = json.loads((root / "assets/data/recipes.json").read_text())
-    after = json.loads((site / "assets/data/recipes.json").read_text())
-    assert len(before) == len(after) == 8
-    for original, edited in zip(before, after):
-        if original["id"] != "focaccia-artesanal":
-            assert original == edited
-        else:
-            for old, new in zip(original["variants"], edited["variants"]):
-                assert old["ingredients"] == new["ingredients"] and old["steps"] == new["steps"]
-    other.goto(url)
-    other.locator("#newRecipe").click()
-    other.locator("#general input").first.fill("Receta de prueba")
-    with other.expect_download() as download:
-        other.get_by_text("Descargar receta JSON", exact=True).click()
-    download.value.save_as(recipe_file)
-    run(["node", site / "tools/incorporar-receta.mjs", recipe_file], check=True)
-    for client in [page, other]:
-        client.goto(url)
-        client.locator(".card").nth(8).wait_for()
-        assert client.locator(".card").count() == 9
-    page.evaluate("""localStorage.setItem('recetario:edits', JSON.stringify({old:
-      {id:'focaccia-artesanal',title:'Borrador antiguo'}}))""")
-    page.reload()
-    page.locator('#legacy summary').click()
-    page.get_by_role('button', name='Borrador antiguo').click()
-    assert page.locator("#general input").first.input_value() == 'Borrador antiguo'
-    page.get_by_text("Cancelar", exact=True).click()
-    assert page.locator(".card").filter(has_text="Borrador antiguo").count() == 0
-    page.goto(url + "#/recetas/focaccia-artesanal")
+    catalog = json.loads((root / "assets/data/recipes.json").read_text())
+    focaccia = next(recipe for recipe in catalog if recipe["id"] == "focaccia-artesanal")
+    for i, variant in enumerate(focaccia["variants"]):
+        page.locator(f'[data-act="variant:{i}"]').click()
+        page.wait_for_function("id => active.variant.id === id", arg=variant["id"])
+        assert page.locator(".columns ol li").all_text_contents() == variant["steps"]
+        assert page.locator(".columns .check span").all_text_contents() == variant["ingredients"]
+    assert page.locator("#newRecipe, [data-act=edit], #legacy").count() == 0
+    page.locator("[data-act=shop]").click()
+    page.locator("#sheet [data-dismiss]").click()
+    page.evaluate("localStorage.setItem('recetario:edits', JSON.stringify({old:{title:'Inédita'}}))")
     page.locator("#personal").fill("Mi nota")
     page.locator("#page a").tap()
     page.locator("#page").wait_for(state="hidden")
@@ -99,7 +58,36 @@ with sync_playwright() as pw:
     data = json.loads(Path(download.value.path()).read_text())["entries"]
     assert "recetario:edits" in data
     assert any(json.loads(v) == "Mi nota" for v in data.values())
+    page.reload()
+    assert page.locator(".card").filter(has_text="Inédita").count() == 0
+    for width, height in [(320, 480), (1440, 900)]:
+        page.set_viewport_size({"width": width, "height": height})
+        for dismiss in ["outside", "escape", "close"]:
+            page.locator("#filters").click()
+            assert page.locator("#filterBox [data-dismiss]").evaluate("b => b === document.activeElement")
+            box = page.locator("#applyFilters").bounding_box()
+            assert box["y"] + box["height"] <= height
+            page.locator("#typeFilter").select_option(label="Pan")
+            if dismiss == "outside":
+                page.mouse.click(1, 1)
+            elif dismiss == "escape":
+                page.keyboard.press("Escape")
+            else:
+                page.locator("#filterBox [data-dismiss]").click()
+            page.locator("#filterBox").wait_for(state="hidden")
+            assert page.locator("#filters").evaluate("b => b === document.activeElement")
+            assert page.locator(".card").count() == 8
+        page.locator("#filters").click()
+        assert page.locator("#typeFilter").input_value() == "all"
+        page.locator("#typeFilter").select_option(label="Pan")
+        page.locator("#applyFilters").click()
+        assert 0 < page.locator(".card").count() < 8
+        page.locator("#filters").click()
+        page.locator("#resetFilters").click()
+        assert page.locator(".card").count() == 8
+        page.locator("#shopping").click()
+        page.keyboard.press("Escape")
+        page.locator("#sheet").wait_for(state="hidden")
     assert not errors, errors
 server.shutdown()
-sandbox.cleanup()
 print("OK")

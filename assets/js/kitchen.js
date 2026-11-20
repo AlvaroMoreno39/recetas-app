@@ -42,13 +42,13 @@ function renderChips() {
       button.setAttribute("aria-pressed", option.value === state.filters.type);
       button.onclick = () => {
         el.typeFilter.value = option.value;
-        el.typeFilter.dispatchEvent(new Event("change"));
+        state.filters.type = option.value;
+        renderRecipes();
       };
       return button;
     }),
   );
 }
-$("#filters").onclick = () => $("#filterBox").showModal();
 let active, wake, timerInterval;
 async function keepAwake() {
   if (!active?.cooking || document.hidden || !navigator.wakeLock) return;
@@ -307,7 +307,6 @@ function draw() {
         : "") +
       '<div class="actions">' +
       (steps.length ? button("Empezar a cocinar", "cook", true) : "") +
-      button("Editar receta", "edit") +
       '</div><div class="columns"><section><h2>Ingredientes</h2><label>Multiplicar cantidades<input id="scale" type="number" min=".01" max="100" step="any" value="' +
       session.scale +
       '"></label><small>Solo se ajustan medidas inequívocas en g, kg, ml o l.</small><div class="actions">' +
@@ -319,7 +318,7 @@ function draw() {
       button("Añadir a la compra", "shop") +
       "</div></section><section><h2>Preparación</h2><ol>" +
       steps.map((s) => "<li>" + html(s) + "</li>").join("") +
-      '</ol></section></div><label><h3>Notas personales</h3><textarea id="personal" placeholder="Tus observaciones sobre esta preparación"></textarea></label><small>Se guardan en este navegador.</small>';
+      '</ol></section></div><label><h3>Notas personales</h3><textarea id="personal" placeholder="Tus observaciones sobre esta preparación"></textarea></label><small>Anotaciones privadas de este navegador.</small>';
     const timings = Object.entries(detail.times || {}).filter(
       ([, minutes]) => minutes > 0,
     );
@@ -420,9 +419,6 @@ el.detailBody.onclick = (e) => {
       tick();
       break;
     }
-    case "edit":
-      editRecipe(recipe);
-      break;
     case "shop":
       addShopping();
       break;
