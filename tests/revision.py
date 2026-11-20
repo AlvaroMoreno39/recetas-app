@@ -31,9 +31,14 @@ with sync_playwright() as pw:
     page.locator("#searchInput").fill("focaccia")
     assert page.locator(".card").count() == 1
     page.locator(".card").click()
-    page.locator(".variant-switcher a").last.click()
+    page.locator(".variant-switcher a").last.tap()
     page.locator(".variant-switcher a:last-child[aria-current=page]").wait_for()
     assert page.locator(".variant-switcher a").last.get_attribute("aria-current") == "page"
+    page.go_back()
+    page.locator(".variant-switcher a:first-child[aria-current=page]").wait_for()
+    page.go_forward()
+    page.locator(".variant-switcher a:last-child[aria-current=page]").wait_for()
+    assert page.locator(".columns li").first.evaluate("li => getComputedStyle(li).userSelect !== 'none'")
     page.locator("#page > a").click()
     assert page.locator("#searchInput").input_value() == "focaccia"
     page.locator("#searchInput").fill("")
@@ -44,7 +49,15 @@ with sync_playwright() as pw:
         const titles = [...document.querySelectorAll('.card .title')].map(el => el.textContent);
         return titles.every((title,i) => !i || titles[i-1].localeCompare(title, 'es', {sensitivity:'base'}) <= 0);
     })()""")
-    for width in [320, 430, 1440]:
+    page.locator("#chips button").filter(has_text="Pizza").click()
+    assert page.locator(".card").count() == 1
+    page.locator("#chips button").filter(has_text="Todas").click()
+    page.locator("#searchInput").fill("sin coincidencias xyz")
+    page.locator("#empty").wait_for()
+    page.locator("#btnClearFilters").click()
+    page.keyboard.press("/")
+    assert page.locator("#searchInput").evaluate("el => el === document.activeElement")
+    for width in [320, 375, 430, 768, 1024, 1440]:
         page.set_viewport_size({"width": width, "height": 820})
         for recipe in catalog:
             for detail in recipe.get("variants") or [recipe]:
@@ -60,7 +73,8 @@ with sync_playwright() as pw:
                 assert page.locator(".columns ol li").all_text_contents() == detail["steps"]
                 assert page.locator("#page input, #page textarea, #page button, #page form").count() == 0
                 assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
-                assert page.locator(".photos img").count() >= 1
+                page.locator(".photos img").first.evaluate("img => img.decode()")
+                assert "/responsive/" in page.locator(".photos img").first.evaluate("img => img.currentSrc")
     page.goto(url)
     page.locator(".card").first.wait_for()
     for width, height in [(320, 480), (1440, 900)]:
@@ -88,6 +102,12 @@ with sync_playwright() as pw:
         page.locator("#filters").click()
         page.locator("#resetFilters").click()
         assert page.locator(".card").count() == 8
+    page.route("**/responsive/*.webp", lambda route: route.abort())
+    page.goto(url + "?fallback#/recetas/focaccia-artesanal")
+    page.wait_for_function("document.querySelector('.photos img')?.currentSrc.endsWith('.jpg') && document.querySelector('.photos img').naturalWidth > 0")
+    page.route("**/recipes/*.jpg", lambda route: route.abort())
+    page.reload()
+    page.wait_for_function("document.querySelector('.photos img')?.currentSrc.startsWith('data:image/') && document.querySelector('.photos img').naturalWidth > 0")
     assert not errors, errors
 server.shutdown()
 print("OK")

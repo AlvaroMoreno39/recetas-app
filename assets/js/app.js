@@ -44,6 +44,7 @@ async function init() {
   state.recipes = await loadRecipes();
   bindEvents();
   renderTypeFilter();
+  renderChips();
   renderRecipes();
   route();
 }
@@ -109,7 +110,11 @@ async function loadRecipes() {
   if (!response.ok) throw new Error('No se pudo leer recipes.json');
   const catalog = await response.json();
   if (!Array.isArray(catalog)) throw new Error('Formato de catálogo desconocido');
-  return catalog.map(normalizeRecipe);
+  return catalog.map(item => {
+    const recipe = normalizeRecipe(item);
+    recipe.searchText = searchableText(recipe);
+    return recipe;
+  });
 
 }
 
@@ -163,6 +168,22 @@ function normalizeVariant(item) {
   };
 }
 
+function searchableText(recipe) {
+  return normalizeText(
+      [
+        recipe.title,
+        recipe.type,
+        recipe.profile,
+        recipe.difficulty,
+        recipe.notes,
+        (recipe.tags || []).join(' '),
+        recipe.ingredients.join(' '),
+        recipe.steps.join(' '),
+        recipe.variants.map((variant) => [variant.label, variant.title, variant.summary, variant.learns.join(' '), variant.ingredients.join(' '), variant.steps.join(' ')].join(' ')).join(' '),
+      ].join(' ')
+    );
+}
+
 function getProcessedRecipes() {
   const tokens = normalizeText(state.filters.query).split(' ').filter(Boolean);
 
@@ -177,21 +198,7 @@ function getProcessedRecipes() {
       state.filters.difficulty === 'all' ||
       detailSets.some((detail) => normalizeDifficulty(detail.difficulty) === state.filters.difficulty);
 
-    const haystack = normalizeText(
-      [
-        recipe.title,
-        recipe.type,
-        recipe.profile,
-        recipe.difficulty,
-        recipe.notes,
-        (recipe.tags || []).join(' '),
-        recipe.ingredients.join(' '),
-        recipe.steps.join(' '),
-        recipe.variants.map((variant) => [variant.label, variant.title, variant.summary, variant.learns.join(' '), variant.ingredients.join(' '), variant.steps.join(' ')].join(' ')).join(' '),
-      ].join(' ')
-    );
-
-    const matchesQuery = tokens.every((token) => haystack.includes(token));
+    const matchesQuery = tokens.every((token) => recipe.searchText.includes(token));
     return matchesType && matchesDuration && matchesProfile && matchesDifficulty && matchesQuery;
   });
 
@@ -204,7 +211,9 @@ function renderRecipes() {
   const list = getProcessedRecipes();
   const fragment = document.createDocumentFragment();
 
-  renderChips();
+  for (const chip of document.querySelectorAll('#chips button')) {
+    chip.setAttribute('aria-pressed', chip.value === state.filters.type);
+  }
   el.grid.innerHTML = '';
   if (el.empty) el.empty.hidden = list.length > 0;
 
@@ -215,22 +224,11 @@ function renderRecipes() {
     if (!node) return;
 
     node.href = recipeLink(recipe.id);
-    node.style.animationDelay = `${Math.min(index * 35, 220)}ms`;
-
     const thumb = node.querySelector('.thumb');
-    const imageSrc = recipe.image || createPlaceholderImage(recipe.title);
-    if (thumb) {
-      thumb.src = imageSrc;
-      thumb.alt = recipe.title;
-      thumb.referrerPolicy = 'no-referrer';
-      thumb.addEventListener(
-        'error',
-        () => {
-          thumb.src = createPlaceholderImage(recipe.title);
-        },
-        { once: true }
-      );
-    }
+    thumb.loading = index === 0 ? 'eager' : 'lazy';
+    if (index === 0) thumb.fetchPriority = 'high';
+    setPhoto(thumb, recipe.image, recipe.title,
+      '(max-width: 640px) 92vw, (max-width: 980px) 45vw, (max-width: 1280px) 30vw, 375px');
 
     const title = node.querySelector('.title');
     if (title) title.textContent = recipe.title;
@@ -239,13 +237,10 @@ function renderRecipes() {
     setTagContent(tagType, recipe.type);
 
     const tagDuration = node.querySelector('.tag-duration');
-    setTagContent(tagDuration, isProgressiveRecipe ? '' : (primaryDetail.prepTime ? primaryDetail.prepTime + ' min' : ''));
+    setTagContent(tagDuration, isProgressiveRecipe ? '' : (primaryDetail.prepTime ? formatTime(primaryDetail.prepTime) : ''));
 
     const tagProfile = node.querySelector('.tag-profile');
     setTagContent(tagProfile, (recipe.variants.length ? recipe.variants.length + " variantes" : ""));
-
-    const tagDifficulty = node.querySelector('.tag-difficulty');
-    setTagContent(tagDifficulty, isProgressiveRecipe ? '' : formatDifficulty(primaryDetail.difficulty || recipe.difficulty));
 
     const desc = node.querySelector('.desc');
     if (desc) desc.textContent = buildCardDescription(recipe);
@@ -263,6 +258,7 @@ function renderChips() {
     ...Array.from(el.typeFilter.options, (option) => {
       const button = document.createElement("button");
       button.textContent = option.text;
+      button.value = option.value;
       button.setAttribute("aria-pressed", option.value === state.filters.type);
       button.onclick = () => {
         el.typeFilter.value = option.value;
@@ -543,14 +539,8 @@ function createPlaceholderImage(title) {
   const initials = safeString(title).slice(0, 2).toUpperCase() || 'RC';
   const svg = `
     <svg xmlns='http://www.w3.org/2000/svg' width='640' height='400'>
-      <defs>
-        <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
-          <stop offset='0%' stop-color='#f5dfbd'/>
-          <stop offset='100%' stop-color='#e6bd86'/>
-        </linearGradient>
-      </defs>
-      <rect width='100%' height='100%' fill='url(#g)' />
-      <text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' fill='#7f4528' font-family='Space Grotesk, sans-serif' font-size='88' font-weight='700'>${escapeHtml(
+      <rect width='100%' height='100%' fill='#F3EEE6'/>
+      <text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' fill='#766F65' font-family='Georgia, serif' font-size='88' font-weight='700'>${escapeHtml(
         initials
       )}</text>
     </svg>
@@ -578,4 +568,42 @@ function createId() {
 
 function createCardNode() {
   return el.cardTpl.content.firstElementChild.cloneNode(true);
+}
+
+const optimizedPhotos = new Set([
+  'assets/images/recipes/bizcocho-manzana.jpg',
+  'assets/images/recipes/bizcocho-platanothermomix.jpg',
+  'assets/images/recipes/carbonara-casera.jpg',
+  'assets/images/recipes/focaccia-artesanal.jpg',
+  'assets/images/recipes/masa-madre-integral.jpg',
+  'assets/images/recipes/pan-masa-madre.jpg',
+  'assets/images/recipes/pasta-fresca.jpg',
+  'assets/images/recipes/pizza-casera.jpg',
+]);
+
+function setPhoto(img, src, title, sizes) {
+  img.alt = title;
+  img.draggable = false;
+  img.decoding = 'async';
+  if (optimizedPhotos.has(src)) {
+    const base = src.replace('/recipes/', '/responsive/').replace(/\.jpg$/, '');
+    img.sizes = sizes;
+    img.srcset = base + '-480.webp 480w, ' + base + '-960.webp 960w';
+  }
+  img.onerror = () => {
+    if (img.hasAttribute('srcset')) {
+      img.removeAttribute('srcset');
+      img.src = src;
+    } else {
+      img.onerror = null;
+      img.src = createPlaceholderImage(title);
+    }
+  };
+  img.src = src || createPlaceholderImage(title);
+}
+
+function formatTime(minutes) {
+  if (minutes % 1440 === 0) return minutes / 1440 + (minutes === 1440 ? ' día' : ' días');
+  if (minutes < 60) return minutes + ' min';
+  return Math.floor(minutes / 60) + ' h' + (minutes % 60 ? ' ' + minutes % 60 + ' min' : '');
 }

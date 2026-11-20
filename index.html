@@ -5,20 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="only light" />
     <title>Mis recetas</title>
+    <link rel="icon" href="data:," />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/style.css?v=libro1" />
+    <link rel="stylesheet" href="assets/css/style.css?v=editorial1" />
   </head>
   <body>
 
     <div class="container">
       <header class="topbar">
         <div class="brand">
-          
+
           <h1>Mis recetas</h1>
           <p class="subtitle">Tu recetario personal, siempre a mano.</p>
         </div>
@@ -106,25 +107,26 @@
       </footer>
     </div>
 
-    <main id="page" hidden><a href="#">← Mis recetas</a><h1 id="detailTitle" tabindex="-1"></h1><section id="detailBody"></section></main>
+    <main id="page" hidden><a href="#">← Volver al catálogo</a><h1 id="detailTitle" tabindex="-1"></h1><section id="detailBody"></section></main>
     <template id="cardTpl">
       <a class="card">
         <div class="thumb-wrap"><img class="thumb" alt="Imagen de receta" loading="lazy" decoding="async" /></div>
         <div class="card-body">
-          <h3 class="title"></h3>
+
           <div class="card-tags">
             <span class="tag card-tag tag-type"></span>
             <span class="tag card-tag tag-duration"></span>
             <span class="tag card-tag tag-profile"></span>
-            <span class="tag card-tag tag-difficulty"></span>
+
           </div>
+          <h2 class="title"></h2>
           <p class="desc"></p>
         </div>
 
       </a>
     </template>
 
-    <script src="assets/js/app.js?v=libro1" defer></script>
-    <script src="assets/js/recipe.js" defer></script>
+    <script src="assets/js/app.js?v=editorial1" defer></script>
+    <script src="assets/js/recipe.js?v=editorial1" defer></script>
   </body>
 </html>
