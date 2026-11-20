@@ -1,16 +1,16 @@
 const sheet = $("#sheet");
-function loadEdits() {
-  const recipes = new Map(state.recipes.map((r) => [r.id, r]));
-  for (const item of Object.values(read("edits", {})))
-    if (item && typeof item.id === "string") recipes.set(item.id, normalizeRecipe(item));
-  state.recipes = [...recipes.values()];
+function downloadJson(value, filename) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2) + "\n"], {type: "application/json"}));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
+
 function editRecipe(original) {
-  const stored = original && read("edits", {})[original.id];
-  const draft = original
-    ? structuredClone(stored ? normalizeRecipe(stored) : original)
-    : normalizeRecipe({ id: createId(), title: "", type: "General" });
-  const initialRecord = JSON.stringify(stored);
+  const draft = original ? structuredClone(original) :
+    normalizeRecipe({ id: createId(), title: "", type: "General" });
   sheet.setAttribute("aria-label", original ? "Editar receta" : "Nueva receta");
   let selected = Math.max(0, draft.variants.findIndex(v => v.id === active?.variant?.id)),
     dirty = false;
@@ -135,7 +135,7 @@ function editRecipe(original) {
     sheet.innerHTML =
       "<h2>" +
       (original ? "Editar receta" : "Nueva receta") +
-      '</h2><form><fieldset id="general"><legend>Receta</legend></fieldset><fieldset id="versions"><legend>Variantes</legend></fieldset><fieldset id="preparation"><legend>Preparación</legend></fieldset><p>Los cambios se guardan en este navegador.</p><div class="actions"><button class="primary">Guardar receta</button>' +
+      '</h2><form><fieldset id="general"><legend>Receta</legend></fieldset><fieldset id="versions"><legend>Variantes</legend></fieldset><fieldset id="preparation"><legend>Preparación</legend></fieldset><p>Descarga esta receta y añádela al catálogo del repositorio para publicarla.</p><div class="actions"><button class="primary">Descargar receta JSON</button>' +
       button("Cancelar", "close") +
       "</div></form>";
     $("#general").append(
@@ -242,22 +242,9 @@ function editRecipe(original) {
         return;
       }
       draft.updatedAt = new Date().toISOString();
-      const edits = read("edits", {});
-      if (JSON.stringify(edits[draft.id]) !== initialRecord) {
-        alert("La receta ha cambiado en otra pestaña. Conserva tu borrador y revisa la otra versión antes de continuar.");
-        return;
-      }
-      edits[draft.id] = draft;
-      if (!save("edits", edits)) return;
-      loadEdits();
-      renderTypeFilter();
-      el.typeFilter.value = state.filters.type;
-      renderRecipes();
+      downloadJson(draft, draft.id + ".json");
       dirty = false;
-      sheet.close();
-      const link = recipeLink(draft.id, draft.variants[selected]?.id);
-      if (location.hash === link) route();
-      else location.hash = link;
+
     };
     sheet.querySelectorAll("[data-act]").forEach(
       (b) =>
@@ -402,11 +389,16 @@ $("#backup").onclick = () => {
       .filter(key => key.startsWith("recetario:"))
       .map(key => [key, localStorage.getItem(key)]));
     const snapshot = {format: "mis-recetas", version: 1, createdAt: new Date().toISOString(), entries};
-    const url = URL.createObjectURL(new Blob([JSON.stringify(snapshot, null, 2)], {type: "application/json"}));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "mis-recetas-" + snapshot.createdAt.replaceAll(":", "-") + ".json";
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    downloadJson(snapshot, "mis-recetas-" + snapshot.createdAt.replaceAll(":", "-") + ".json");
   } catch { alert("No se ha podido exportar el almacenamiento de este navegador."); }
 };
+
+const legacyDrafts = Object.values(read("edits", {})).filter(recipe =>
+  recipe && typeof recipe.id === "string" && typeof recipe.title === "string");
+for (const recipe of legacyDrafts) {
+  const control = document.createElement("button");
+  control.textContent = recipe.title;
+  control.onclick = () => editRecipe(normalizeRecipe(recipe));
+  $("#legacy div").append(control);
+}
+$("#legacy").hidden = !legacyDrafts.length;

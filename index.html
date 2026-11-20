@@ -24,7 +24,7 @@
           <p class="subtitle">Tu recetario personal, siempre a mano.</p>
         </div>
 
-      <nav><button id="shopping">Lista de la compra</button> <button class="primary" id="newRecipe">Nueva receta</button></nav></header>
+      <nav><button id="shopping">Lista de la compra</button> <button class="primary" id="newRecipe" disabled>Nueva receta</button></nav></header>
 
       <section class="search-panel" aria-label="Búsqueda y filtros">
         <label class="search-field">
@@ -102,6 +102,7 @@
       </main>
 
       <footer class="site-footer">
+        <details id="legacy" hidden><summary>Recuperar recetas locales anteriores</summary><div></div></details>
         <button type="button" id="backup">Exportar copia de mis datos</button>
         <p>Creado por Álvaro Moreno Lumbreras.</p>
         <p>Copyright © 2026. Todos los derechos reservados.</p>
@@ -127,9 +128,8 @@
       </a>
     </template>
 
-    <script src="assets/data/recipes-data.js?v=20260914o" defer></script>
-    <script src="assets/js/app.js?v=20261120" defer></script>
-  <script defer src="assets/js/kitchen.js"></script><script defer src="assets/js/editor.js"></script></body>
+    <script src="assets/js/app.js?v=catalogo1" defer></script>
+  <script defer src="assets/js/kitchen.js"></script><script defer src="assets/js/editor.js?v=catalogo1"></script></body>
 </html>
 
 
