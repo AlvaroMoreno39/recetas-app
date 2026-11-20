@@ -11,10 +11,9 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/style.css?v=lectura1" />
+    <link rel="stylesheet" href="assets/css/style.css?v=libro1" />
   </head>
   <body>
-    <div class="app-bg" aria-hidden="true"></div>
 
     <div class="container">
       <header class="topbar">
@@ -24,7 +23,7 @@
           <p class="subtitle">Tu recetario personal, siempre a mano.</p>
         </div>
 
-      <nav><button id="shopping">Lista de la compra</button></nav></header>
+      </header>
 
       <section class="search-panel" aria-label="Búsqueda y filtros">
         <label class="search-field">
@@ -102,14 +101,12 @@
       </main>
 
       <footer class="site-footer">
-        <button type="button" id="backup">Exportar copia de mis datos</button>
         <p>Creado por Álvaro Moreno Lumbreras.</p>
         <p>Copyright © 2026. Todos los derechos reservados.</p>
       </footer>
     </div>
 
     <main id="page" hidden><a href="#">← Mis recetas</a><h1 id="detailTitle" tabindex="-1"></h1><section id="detailBody"></section></main>
-    <dialog id="sheet" aria-label="Lista de la compra"><header class="dialog-head"><h2>Lista de la compra</h2><button type="button" data-dismiss autofocus aria-label="Cerrar lista de la compra">×</button></header><div class="dialog-scroll" id="basketBody"></div></dialog>
     <template id="cardTpl">
       <a class="card">
         <div class="thumb-wrap"><img class="thumb" alt="Imagen de receta" loading="lazy" decoding="async" /></div>
@@ -127,11 +124,7 @@
       </a>
     </template>
 
-    <script src="assets/js/app.js?v=lectura1" defer></script>
-  <script defer src="assets/js/kitchen.js?v=lectura1"></script><script defer src="assets/js/shopping.js?v=lectura1"></script></body>
+    <script src="assets/js/app.js?v=libro1" defer></script>
+    <script src="assets/js/recipe.js" defer></script>
+  </body>
 </html>
-
-
-
-
-

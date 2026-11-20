@@ -133,7 +133,6 @@ function normalizeRecipe(item) {
     images,
     yields: safeString(item.yields),
     times: item.times || {},
-    stepDetails: Array.isArray(item.stepDetails) ? item.stepDetails : [],
     ingredients: Array.isArray(item.ingredients) ? item.ingredients.map(safeString).filter(Boolean) : [],
     steps: Array.isArray(item.steps) ? item.steps.map(safeString).filter(Boolean) : [],
     notes: safeString(item.notes),
@@ -159,7 +158,6 @@ function normalizeVariant(item) {
     learns: Array.isArray(item.learns) ? item.learns.map(safeString).filter(Boolean) : [],
     yields: safeString(item.yields),
     times: item.times || {},
-    stepDetails: Array.isArray(item.stepDetails) ? item.stepDetails : [],
     ingredients: Array.isArray(item.ingredients) ? item.ingredients.map(safeString).filter(Boolean) : [],
     steps: Array.isArray(item.steps) ? item.steps.map(safeString).filter(Boolean) : [],
   };
@@ -260,6 +258,22 @@ function renderRecipes() {
   renderActiveFilters();
 }
 
+function renderChips() {
+  document.querySelector('#chips').replaceChildren(
+    ...Array.from(el.typeFilter.options, (option) => {
+      const button = document.createElement("button");
+      button.textContent = option.text;
+      button.setAttribute("aria-pressed", option.value === state.filters.type);
+      button.onclick = () => {
+        el.typeFilter.value = option.value;
+        state.filters.type = option.value;
+        renderRecipes();
+      };
+      return button;
+    }),
+  );
+}
+
 function renderTypeFilter() {
   if (!el.typeFilter) return;
 
@@ -358,14 +372,6 @@ function getPrimaryDetail(recipe) {
 
 function getRecipeDetailSets(recipe) {
   return Array.isArray(recipe.variants) && recipe.variants.length > 0 ? recipe.variants : [recipe];
-}
-
-function getDetailIngredients(recipe, variant) {
-  return (variant || recipe).ingredients;
-}
-
-function getDetailSteps(recipe, variant) {
-  return (variant || recipe).steps;
 }
 
 function getDetailImages(recipe, variant) {
@@ -490,13 +496,6 @@ function matchesDurationFilter(prepTime, mode) {
   return true;
 }
 
-function formatDurationBand(prepTime) {
-  if (!Number.isFinite(prepTime) || prepTime <= 0) return 'Sin definir';
-  if (prepTime <= 30) return 'Rapida';
-  if (prepTime <= 60) return 'Media';
-  return 'Lenta';
-}
-
 function normalizeImageUrl(raw) {
   const value = safeString(raw);
   if (!value) return '';
@@ -538,10 +537,6 @@ function escapeHtml(text) {
   const span = document.createElement('span');
   span.textContent = text;
   return span.innerHTML;
-}
-
-function escapeAttribute(text) {
-  return String(text).replace(/"/g, '&quot;');
 }
 
 function createPlaceholderImage(title) {

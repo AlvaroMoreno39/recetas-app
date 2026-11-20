@@ -41,15 +41,13 @@ a {
 }
 button,
 input,
-select,
-textarea {
+select {
   font: inherit;
   color: inherit;
 }
 button,
 select,
-input,
-textarea {
+input {
   background: white;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -57,8 +55,7 @@ textarea {
   max-width: 100%;
 }
 button,
-select,
-summary {
+select {
   cursor: pointer;
 }
 button {
@@ -67,27 +64,19 @@ button {
 button:hover {
   border-color: var(--olive);
 }
-button:disabled {
-  opacity: 0.55;
-}
 button.primary,
 [aria-pressed="true"] {
   background: var(--olive);
   color: white;
 }
-input:not([type="checkbox"]),
-textarea,
+input,
 select {
   width: 100%;
-}
-textarea {
-  min-height: 5em;
 }
 label {
   display: block;
 }
 label > span,
-small,
 .subtitle,
 .results-label,
 .desc {
@@ -108,10 +97,8 @@ small,
 }
 .topbar,
 .status-row,
-.actions,
 #chips,
-.variant-switcher,
-nav {
+.variant-switcher {
   display: flex;
   align-items: center;
   gap: 0.55rem;
@@ -153,8 +140,7 @@ nav {
   width: 100%;
 }
 .filter-chip,
-.tag,
-.detail-pill {
+.tag {
   font-size: 0.83rem;
   color: var(--muted);
   margin-right: 0.7rem;
@@ -206,57 +192,32 @@ nav {
 .detail-img {
   max-height: 340px;
 }
-.gallery img {
-  width: 70px;
-  height: 48px;
-  object-fit: cover;
+.variant-switcher a {
+  flex: 1 1 230px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: .75rem 1rem;
+  text-decoration: none;
 }
-.gallery button {
-  padding: 3px;
+.variant-switcher a[aria-current="page"] {
+  border-color: var(--olive);
+  background: #eef0e9;
+  font-weight: 600;
 }
-.variant-switcher button {
-  flex: 1;
-  text-align: left;
-  min-width: min(230px, 100%);
-}
-.variant-switcher small {
-  display: block;
-  color: inherit;
-}
+.photos { display: grid; gap: .8rem; }
 .columns {
   display: grid;
   grid-template-columns: 2fr 3fr;
   gap: 2rem;
 }
-.check {
-  display: flex;
-  gap: 0.75rem;
-  align-items: baseline;
-  padding: 0.65rem 0;
-  border-bottom: 1px solid var(--line);
+.columns ul, .columns ol {
+  padding-inline-start: 1.7rem;
+  font-size: 1.1rem;
+  line-height: 1.7;
 }
-input:checked + span {
-  text-decoration: line-through;
-}
-input[type="checkbox"] {
-  accent-color: var(--olive);
-}
-li {
-  padding: 0.4em 0;
-}
-.cooking {
-  max-width: 680px;
-  margin: auto;
-}
-.instruction {
-  font:
-    1.7rem/1.5 Fraunces,
-    Georgia,
-    serif;
-}
-.actions {
-  margin: 1em 0;
-}
+.columns li { padding: .5rem 0 .5rem .2rem; }
+.columns ol li + li { margin-top: .5rem; }
+.columns li::marker { color: var(--olive); }
 dialog {
   background: var(--paper);
   color: inherit;
@@ -292,10 +253,6 @@ html:has(dialog[open]) { overflow: hidden; }
 .dialog-scroll { overflow-y: auto; min-height: 0; overscroll-behavior: contain; padding: .3rem; }
 .dialog-foot { justify-content: flex-end; flex-wrap: wrap; }
 
-progress {
-  width: 100%;
-  accent-color: var(--olive);
-}
 @media (max-width: 980px) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -322,15 +279,6 @@ progress {
   #chips {
     flex-basis: 100%;
   }
-  .instruction {
-    font-size: 1.45rem;
-  }
-}
-.check, summary {
-  min-height: 44px;
-}
-summary {
-  padding-block: .6rem;
 }
 #page, dialog {
   overflow-wrap: anywhere;

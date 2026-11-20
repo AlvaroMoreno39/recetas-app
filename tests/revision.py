@@ -16,50 +16,53 @@ with sync_playwright() as pw:
     page = browser.new_page(viewport={"width": 375, "height": 812}, is_mobile=True, has_touch=True)
     errors = []
     page.on("pageerror", lambda error: errors.append(str(error)))
-    page.on("dialog", lambda dialog: dialog.accept())
+    # Reading must work even when browser storage is unavailable.
+    page.add_init_script("""
+        for (const key of ['localStorage', 'sessionStorage']) {
+          Object.defineProperty(window, key, {get() { throw Error('Unexpected storage access'); }});
+        }
+    """)
     page.goto(url, wait_until="domcontentloaded")
     page.locator(".card").first.wait_for()
     assert page.locator(".card").count() == 8
-    assert page.evaluate("decimal(12500) === '12500' && measurement('1/2 l leche') === null")
-    for width in [320, 375, 430, 768]:
-        page.set_viewport_size({"width": width, "height": 812})
-        page.goto(url + "#/recetas/focaccia-artesanal?variante=focaccia-nivel-2")
-        assert page.locator(".container").is_hidden()
-        assert page.locator(".variant-switcher button[aria-pressed=true]").count() == 1
-        page.locator("[data-item]").first.check()
-        page.locator("[data-act=cook]").tap()
-        page.locator("#manual input").fill("2")
-        page.locator("#manual button").tap()
-        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
-        page.locator('[data-act="pause:0"]').focus()
-        page.wait_for_timeout(1100)
-        assert page.evaluate('document.activeElement.dataset.act === "pause:0"')
-        page.reload(wait_until="domcontentloaded")
-        page.locator('[data-act="pause:0"]').tap()
-        page.locator('[data-act="cancel:0"]').tap()
-        page.locator('[data-act=exit]').tap()
-        assert page.locator("[data-item]").first.is_checked()
     catalog = json.loads((root / "assets/data/recipes.json").read_text())
-    focaccia = next(recipe for recipe in catalog if recipe["id"] == "focaccia-artesanal")
-    for i, variant in enumerate(focaccia["variants"]):
-        page.locator(f'[data-act="variant:{i}"]').click()
-        page.wait_for_function("id => active.variant.id === id", arg=variant["id"])
-        assert page.locator(".columns ol li").all_text_contents() == variant["steps"]
-        assert page.locator(".columns .check span").all_text_contents() == variant["ingredients"]
-    assert page.locator("#newRecipe, [data-act=edit], #legacy").count() == 0
-    page.locator("[data-act=shop]").click()
-    page.locator("#sheet [data-dismiss]").click()
-    page.evaluate("localStorage.setItem('recetario:edits', JSON.stringify({old:{title:'Inédita'}}))")
-    page.locator("#personal").fill("Mi nota")
-    page.locator("#page a").tap()
-    page.locator("#page").wait_for(state="hidden")
-    with page.expect_download() as download:
-        page.locator("#backup").tap()
-    data = json.loads(Path(download.value.path()).read_text())["entries"]
-    assert "recetario:edits" in data
-    assert any(json.loads(v) == "Mi nota" for v in data.values())
-    page.reload()
-    assert page.locator(".card").filter(has_text="Inédita").count() == 0
+    assert len(catalog) == 8
+    assert page.locator("dialog").count() == 1
+    page.locator("#searchInput").fill("focaccia")
+    assert page.locator(".card").count() == 1
+    page.locator(".card").click()
+    page.locator(".variant-switcher a").last.click()
+    page.locator(".variant-switcher a:last-child[aria-current=page]").wait_for()
+    assert page.locator(".variant-switcher a").last.get_attribute("aria-current") == "page"
+    page.locator("#page > a").click()
+    assert page.locator("#searchInput").input_value() == "focaccia"
+    page.locator("#searchInput").fill("")
+    page.locator("#filters").click()
+    page.locator("#sortSelect").select_option("title_asc")
+    page.locator("#applyFilters").click()
+    assert page.evaluate("""(() => {
+        const titles = [...document.querySelectorAll('.card .title')].map(el => el.textContent);
+        return titles.every((title,i) => !i || titles[i-1].localeCompare(title, 'es', {sensitivity:'base'}) <= 0);
+    })()""")
+    for width in [320, 430, 1440]:
+        page.set_viewport_size({"width": width, "height": 820})
+        for recipe in catalog:
+            for detail in recipe.get("variants") or [recipe]:
+                address = url + "#/recetas/" + recipe["id"]
+                if detail is not recipe:
+                    address += "?variante=" + detail["id"]
+                page.goto(address)
+                page.wait_for_function("url => location.href === url && document.querySelectorAll('.columns ol li').length > 0", arg=address)
+                if detail is not recipe:
+                    page.locator(f'.variant-switcher a[aria-current="page"][href$="{detail["id"]}"]').wait_for()
+                page.get_by_role("heading", name=recipe["title"], exact=True).first.wait_for()
+                assert page.locator(".columns ul li").all_text_contents() == detail["ingredients"]
+                assert page.locator(".columns ol li").all_text_contents() == detail["steps"]
+                assert page.locator("#page input, #page textarea, #page button, #page form").count() == 0
+                assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+                assert page.locator(".photos img").count() >= 1
+    page.goto(url)
+    page.locator(".card").first.wait_for()
     for width, height in [(320, 480), (1440, 900)]:
         page.set_viewport_size({"width": width, "height": height})
         for dismiss in ["outside", "escape", "close"]:
@@ -85,9 +88,6 @@ with sync_playwright() as pw:
         page.locator("#filters").click()
         page.locator("#resetFilters").click()
         assert page.locator(".card").count() == 8
-        page.locator("#shopping").click()
-        page.keyboard.press("Escape")
-        page.locator("#sheet").wait_for(state="hidden")
     assert not errors, errors
 server.shutdown()
 print("OK")
