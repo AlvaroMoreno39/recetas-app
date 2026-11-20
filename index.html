@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/style.css?v=amplio2" />
+    <link rel="stylesheet" href="assets/css/style.css?v=catalogo4" />
   </head>
   <body>
 
@@ -32,7 +32,7 @@
           <input id="searchInput" type="search" placeholder="Buscar recetas o ingredientes..." />
         </label>
 
-        <div id="chips"></div><button id="filters">Filtros</button><dialog id="filterBox" aria-label="Filtros"><header class="dialog-head"><h2>Filtros</h2><button type="button" data-dismiss autofocus aria-label="Cerrar filtros">×</button></header><div class="filters-row dialog-scroll">
+        <div id="chips"></div><button id="filters" aria-haspopup="dialog" aria-controls="filterBox">Filtros</button><dialog id="filterBox" aria-labelledby="filterTitle"><header class="dialog-head"><h2 id="filterTitle">Filtros</h2><button type="button" data-dismiss autofocus aria-label="Cerrar filtros">×</button></header><div class="filters-row dialog-scroll">
           <label>
             <span>Tipo</span>
             <select id="typeFilter">
@@ -126,7 +126,7 @@
       </a>
     </template>
 
-    <script src="assets/js/app.js?v=amplio2" defer></script>
-    <script src="assets/js/recipe.js?v=amplio2" defer></script>
+    <script src="assets/js/app.js?v=catalogo4" defer></script>
+    <script src="assets/js/recipe.js?v=catalogo4" defer></script>
   </body>
 </html>

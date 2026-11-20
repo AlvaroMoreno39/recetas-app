@@ -57,15 +57,15 @@ with sync_playwright() as pw:
     page.locator("#btnClearFilters").click()
     page.keyboard.press("/")
     assert page.locator("#searchInput").evaluate("el => el === document.activeElement")
-    for width in [320, 375, 430, 768, 1024, 1440, 1920]:
+    for width in [320, 375, 430, 639, 640, 768, 999, 1000, 1280, 1399, 1400, 1440, 1920]:
         page.set_viewport_size({"width": width, "height": 820})
         page.goto(url)
         page.locator(".card").first.wait_for()
         grid = page.locator(".grid")
-        expected_columns = 1 if width <= 640 else 2 if width <= 980 else 3
+        expected_columns = 1 if width < 640 else 2 if width < 1000 else 3 if width < 1400 else 4
         assert grid.evaluate("e => getComputedStyle(e).gridTemplateColumns.split(' ').length") == expected_columns
         if width >= 1440:
-            assert 1340 <= grid.bounding_box()["width"] <= 1360
+            assert 1340 <= grid.bounding_box()["width"] <= 1560
         for recipe in catalog:
             for detail in recipe.get("variants") or [recipe]:
                 address = url + "#/recetas/" + recipe["id"]
@@ -84,7 +84,7 @@ with sync_playwright() as pw:
                 if width >= 1440:
                     assert page.locator("#page").bounding_box()["width"] == 1280
                     assert page.locator(".columns section").first.bounding_box()["width"] == 340
-                assert "/responsive/edicion2/" in page.locator(".photos img").first.evaluate("img => img.currentSrc")
+                assert "/responsive/" in page.locator(".photos img").first.evaluate("img => img.currentSrc")
     page.goto(url)
     page.locator(".card").first.wait_for()
     for width, height in [(320, 480), (1440, 900)]:

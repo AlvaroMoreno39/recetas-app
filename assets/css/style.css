@@ -94,7 +94,7 @@ label > span,
 }
 .container,
 #page {
-  width: min(1360px, 94%);
+  width: min(1560px, 94%);
   margin: auto;
   padding: clamp(20px, 4vw, 58px) 0 max(40px, env(safe-area-inset-bottom));
 }
@@ -256,13 +256,12 @@ html:has(dialog[open]) { overflow: hidden; }
 .dialog-scroll { overflow-y: auto; min-height: 0; overscroll-behavior: contain; padding: .3rem; }
 .dialog-foot { justify-content: flex-end; flex-wrap: wrap; }
 
-@media (max-width: 980px) {
+@media (max-width: 999px) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (max-width: 640px) {
-  .grid,
   .columns {
     grid-template-columns: 1fr;
   }
@@ -305,7 +304,7 @@ body { font-optical-sizing: auto; }
 #filters { background: var(--warm); }
 .status-row { min-height: 3.3rem; }
 .results-label { margin: 0; font-size: .9rem; }
-.grid { gap: clamp(1.8rem, 4vw, 3rem) clamp(1rem, 2.5vw, 2rem); }
+.grid { gap: clamp(1.8rem, 4vw, 3rem) clamp(1rem, 2vw, 1.75rem); }
 .thumb-wrap { overflow: hidden; border-radius: 6px; background: var(--warm); }
 .thumb { aspect-ratio: 4 / 3; border-radius: 0; transition: transform var(--ease); }
 .card-body { padding-top: .8rem; }
@@ -398,3 +397,64 @@ button:active, .variant-switcher a:active { background-color: var(--warm); }
   .columns { grid-template-columns: 1fr; }
   .container, #page { width: 92%; }
 }
+
+@media (max-width: 639px) { .grid { grid-template-columns: 1fr; } }
+@media (min-width: 1400px) {
+  .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .title { font-size: clamp(1.7rem, 2vw, 2rem); }
+}
+
+:root { --control-line: #d2cabd; --control-radius: .75rem; }
+#chips { gap: .4rem; }
+#filters, #chips button, .dialog-foot button, .dialog-head button, #btnClearFilters,
+.search-field input, .dialog-scroll select, .variant-switcher a {
+  border: 1px solid var(--control-line);
+  border-radius: var(--control-radius);
+  background-color: var(--surface);
+  transition: border-color var(--ease), background-color var(--ease), color var(--ease);
+}
+#filters, #chips button { border-radius: 2rem; font-weight: 500; }
+#filters { display: inline-flex; align-items: center; gap: .55rem; padding-inline: 1.15rem; }
+#filters::before {
+  content: ""; width: 1.15rem; height: 1.15rem;
+  background: center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2329251f' stroke-width='1.6'%3E%3Cpath d='M2 6h4m4 0h8M2 14h9m4 0h3'/%3E%3Ccircle cx='8' cy='6' r='2'/%3E%3Ccircle cx='13' cy='14' r='2'/%3E%3C/svg%3E");
+}
+#chips [aria-pressed=true], #applyFilters, .variant-switcher a[aria-current=page] {
+  color: white; background-color: var(--olive); border-color: var(--olive);
+}
+.variant-switcher a[aria-current=page] small { color: inherit; }
+#page > a { padding-inline: .85rem; background: var(--warm); border-radius: 2rem; text-decoration: none; color: var(--ink); }
+#btnClearFilters { background: transparent; min-height: 44px; }
+#filterBox { padding: 0; width: min(570px, 94%); border-radius: 1.25rem; }
+.dialog-head, .dialog-foot { padding: 1.2rem 1.6rem; background: var(--paper); }
+.dialog-head h2 { font-size: clamp(1.85rem, 4vw, 2.25rem); letter-spacing: -.035em; }
+.dialog-head button { border-radius: 50%; width: 44px; height: 44px; line-height: 1; }
+.filters-row {
+  margin: 0; padding: 1.35rem 1.6rem;
+  grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1.1rem 1rem;
+}
+.filters-row label { display: grid; gap: .35rem; }
+.filters-row label > span { font-size: .92rem; font-weight: 600; color: var(--ink); }
+.filters-row label:last-child { grid-column: 1/-1; border-top: 1px solid var(--line); padding-top: 1rem; }
+.dialog-scroll select {
+  appearance: none; padding: .62rem 2.3rem .62rem .8rem; min-height: 48px;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23554d40' stroke-width='1.6'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E") no-repeat right .8rem center / 1rem;
+}
+.dialog-foot { justify-content: space-between; }
+.dialog-foot button { min-height: 46px; padding-inline: 1.1rem; font-weight: 600; }
+@media (hover:hover) {
+  #chips button:hover, #filters:hover, .variant-switcher a:hover, .dialog-foot button:hover,
+  .dialog-head button:hover, .dialog-scroll select:hover, #page > a:hover, #btnClearFilters:hover { border-color: var(--olive); }
+  #filters:hover, #chips button:not([aria-pressed=true]):hover, #resetFilters:hover,
+  .dialog-head button:hover, .variant-switcher a:not([aria-current=page]):hover { background-color: var(--warm); }
+  #applyFilters:hover { background-color: #546044; }
+}
+button:active, #page > a:active { box-shadow: inset 0 0 0 1px currentColor; }
+@media (max-width: 640px) {
+  #filterBox { width: 100%; border-radius: 1.25rem 1.25rem 0 0; }
+  .dialog-head, .dialog-foot, .filters-row { padding: 1rem; }
+  .dialog-foot { padding-bottom: max(1rem,env(safe-area-inset-bottom)); }
+}
+@media (max-width: 420px) { .filters-row { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { #chips button, #filters, .variant-switcher a, .dialog-foot button, .dialog-head button, #btnClearFilters, .search-field input, .dialog-scroll select { transition: none; } }
+@media (forced-colors: active) { .dialog-scroll select { appearance: auto; } }

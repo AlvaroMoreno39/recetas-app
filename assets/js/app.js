@@ -228,7 +228,7 @@ function renderRecipes() {
     thumb.loading = index === 0 ? 'eager' : 'lazy';
     if (index === 0) thumb.fetchPriority = 'high';
     setPhoto(thumb, recipe.image, recipe.title,
-      '(max-width: 640px) 92vw, (max-width: 980px) 45vw, (max-width: 1450px) 30vw, 432px');
+      '(max-width: 639px) 92vw, (max-width: 999px) 45vw, (max-width: 1399px) 30vw, (max-width: 1659px) 23vw, 370px');
 
     const title = node.querySelector('.title');
     if (title) title.textContent = recipe.title;
@@ -570,25 +570,27 @@ function createCardNode() {
   return el.cardTpl.content.firstElementChild.cloneNode(true);
 }
 
-const optimizedPhotos = new Set([
-  'assets/images/recipes/bizcocho-manzana.jpg',
-  'assets/images/recipes/bizcocho-platanothermomix.jpg',
-  'assets/images/recipes/carbonara-casera.jpg',
-  'assets/images/recipes/focaccia-artesanal.jpg',
-  'assets/images/recipes/masa-madre-integral.jpg',
-  'assets/images/recipes/pan-masa-madre.jpg',
-  'assets/images/recipes/pasta-fresca.jpg',
-  'assets/images/recipes/pizza-casera.jpg',
+// A recipe keeps its original JPEG as the fallback. The catalogue also
+// works for new image paths that do not have responsive editions yet.
+const photoEditions = new Map([
+  ['pan-masa-madre', 'original'], ['pizza-casera', 'original'],
+  ['carbonara-casera', 'original'], ['pasta-fresca', 'original'],
+  ['bizcocho-manzana', 'cocina'], ['bizcocho-platanothermomix', 'cocina'],
+  ['focaccia-artesanal', 'cocina'], ['masa-madre-integral', 'cocina'],
 ]);
 
 function setPhoto(img, src, title, sizes) {
   img.alt = title;
   img.draggable = false;
   img.decoding = 'async';
-  if (optimizedPhotos.has(src)) {
-    const base = src.replace('/recipes/', '/responsive/edicion2/').replace(/\.jpg$/, '');
+  const name = src?.match(/^assets\/images\/recipes\/([^/]+)\.jpg$/)?.[1];
+  const edition = photoEditions.get(name);
+  if (edition) {
+    const folder = edition === 'original' ? 'responsive' : 'responsive/cocina';
+    const width = edition === 'original' ? 960 : 760;
+    const base = 'assets/images/' + folder + '/' + name;
     img.sizes = sizes;
-    img.srcset = base + '-480.webp 480w, ' + base + '-880.webp 880w';
+    img.srcset = base + '-480.webp 480w, ' + base + '-' + width + '.webp ' + width + 'w';
   }
   img.onerror = () => {
     if (img.hasAttribute('srcset')) {
