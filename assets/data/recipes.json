@@ -6,7 +6,7 @@
     "profile": "dulce",
     "difficulty": "media",
     "prepTime": 50,
-    "image": "assets/images/recipes/bizcocho-platanothermomix.jpg",
+    "image": "assets/images/responsive/commons/bizcocho-platanothermomix-960.webp",
     "ingredients": [
       "3 platanos maduros",
       "2 huevos",
@@ -46,7 +46,7 @@
     "profile": "dulce",
     "difficulty": "media",
     "prepTime": 55,
-    "image": "assets/images/recipes/bizcocho-manzana.jpg",
+    "image": "assets/images/responsive/commons/bizcocho-manzana-960.webp",
     "ingredients": [
       "3 huevos",
       "150 g azucar",
@@ -80,7 +80,7 @@
     "profile": "salado",
     "difficulty": "baja",
     "prepTime": 300,
-    "image": "assets/images/recipes/focaccia-artesanal.jpg",
+    "image": "assets/images/responsive/commons/focaccia-artesanal-960.webp",
     "ingredients": [],
     "steps": [],
     "notes": "Receta progresiva de focaccia con dos niveles para aprender pliegues, fermentacion y mejor estructura de masa sin llenar la web de varias cards parecidas.",
@@ -166,7 +166,7 @@
     "profile": "salado",
     "difficulty": "alta",
     "prepTime": 1080,
-    "image": "assets/images/recipes/pan-masa-madre.jpg",
+    "image": "assets/images/responsive/commons/pan-masa-madre-960.webp",
     "ingredients": [
       "Para 1 hogaza: 500 g de harina total (trigo blanco de fuerza e integral, en la proporcion elegida)",
       "350 g de agua: 330 g para la autolisis y 20 g reservados para la sal",
@@ -206,9 +206,9 @@
     "profile": "salado",
     "difficulty": "media",
     "prepTime": 10080,
-    "image": "assets/images/recipes/masa-madre-integral.jpg",
+    "image": "assets/images/responsive/commons/masa-madre-integral-960.webp",
     "images": [
-      "assets/images/recipes/masa-madre-integral.jpg"
+      "assets/images/responsive/commons/masa-madre-integral-960.webp"
     ],
     "ingredients": [
       "Para empezar: 30 g de harina integral de trigo",
@@ -239,7 +239,7 @@
     "profile": "salado",
     "difficulty": "media",
     "prepTime": 2160,
-    "image": "assets/images/recipes/pizza-casera.jpg",
+    "image": "assets/images/responsive/commons/pizza-casera-960.webp",
     "ingredients": [
       "Masa recomendada: 500 g de harina apta para fermentaciones largas",
       "350 g de agua (70 % de hidratacion; reserva 20 g para la sal)",
@@ -284,7 +284,7 @@
     "profile": "salado",
     "difficulty": "media",
     "prepTime": 90,
-    "image": "assets/images/recipes/pasta-fresca.jpg",
+    "image": "assets/images/responsive/commons/pasta-fresca-960.webp",
     "ingredients": [
       "Por persona: 100 g de harina de trigo y aproximadamente 55-60 g de huevo sin cascara (como referencia sencilla, 1 huevo)",
       "Para 2 personas: 200 g de harina y unos 110-120 g de huevo sin cascara (aproximadamente 2 huevos)",
@@ -320,7 +320,7 @@
     "profile": "salado",
     "difficulty": "media",
     "prepTime": 30,
-    "image": "assets/images/recipes/carbonara-casera.jpg",
+    "image": "assets/images/responsive/commons/carbonara-casera-960.webp",
     "ingredients": [
       "Para 2 personas: 200 g de pasta (por ejemplo, spaghetti secos)",
       "100-120 g de guanciale",

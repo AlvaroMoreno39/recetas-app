@@ -570,27 +570,13 @@ function createCardNode() {
   return el.cardTpl.content.firstElementChild.cloneNode(true);
 }
 
-// A recipe keeps its original JPEG as the fallback. The catalogue also
-// works for new image paths that do not have responsive editions yet.
-const photoEditions = new Map([
-  ['pan-masa-madre', 'original'], ['pizza-casera', 'original'],
-  ['carbonara-casera', 'original'], ['pasta-fresca', 'original'],
-  ['bizcocho-manzana', 'cocina'], ['bizcocho-platanothermomix', 'cocina'],
-  ['focaccia-artesanal', 'cocina'], ['masa-madre-integral', 'cocina'],
-]);
-
 function setPhoto(img, src, title, sizes) {
   img.alt = title;
   img.draggable = false;
   img.decoding = 'async';
-  const name = src?.match(/^assets\/images\/recipes\/([^/]+)\.jpg$/)?.[1];
-  const edition = photoEditions.get(name);
-  if (edition) {
-    const folder = edition === 'original' ? 'responsive' : 'responsive/cocina';
-    const width = edition === 'original' ? 960 : 760;
-    const base = 'assets/images/' + folder + '/' + name;
+  if (src?.startsWith('assets/images/responsive/commons/') && src.endsWith('-960.webp')) {
     img.sizes = sizes;
-    img.srcset = base + '-480.webp 480w, ' + base + '-' + width + '.webp ' + width + 'w';
+    img.srcset = src.replace('-960.webp', '-480.webp') + ' 480w, ' + src + ' 960w';
   }
   img.onerror = () => {
     if (img.hasAttribute('srcset')) {

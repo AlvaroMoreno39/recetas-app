@@ -1,3 +1,3 @@
-La web conserva los JPEG de respaldo en `recipes/`. Las versiones WebP de `responsive/` muestran fotografías reales del pan de masa madre, la pizza en bandeja y la carbonara incorporadas anteriormente al recetario, y la foto de pasta fresca de Sarah Boyle (CC0; atribución y fuente en `recipes/pasta-fresca-source.txt`).
+Las ocho fotografías publicadas proceden de Wikimedia Commons. En [Créditos fotográficos](../../fotografias.html) figuran las fuentes, los autores y las licencias. Los archivos anteriores se conservan como respaldo.
 
-Los dos bizcochos, la focaccia y el cultivo integral en tarro utilizan nuevas representaciones generadas con ImageGen para esta edición. Los recursos de `responsive/cocina/` tienen anchos de 480 y 760 píxeles. La edición ilustrada anterior permanece en `responsive/edicion2/`. El catálogo sigue identificando cada preparación mediante su JPEG original.
+Cada receta del catálogo apunta a su WebP de 960 píxeles en `responsive/commons/`. El navegador puede elegir la versión de 480 píxeles según el ancho disponible. Para sustituir una foto, actualiza ambas versiones y sus créditos.

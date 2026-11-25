@@ -84,7 +84,7 @@ with sync_playwright() as pw:
                 if width >= 1440:
                     assert page.locator("#page").bounding_box()["width"] == 1280
                     assert page.locator(".columns section").first.bounding_box()["width"] == 340
-                assert "/responsive/" in page.locator(".photos img").first.evaluate("img => img.currentSrc")
+                assert "/responsive/commons/" in page.locator(".photos img").first.evaluate("img => img.currentSrc")
     page.goto(url)
     page.locator(".card").first.wait_for()
     for width, height in [(320, 480), (1440, 900)]:
@@ -112,10 +112,11 @@ with sync_playwright() as pw:
         page.locator("#filters").click()
         page.locator("#resetFilters").click()
         assert page.locator(".card").count() == 8
-    page.route("**/responsive/**/*.webp", lambda route: route.abort())
+    page.set_viewport_size({"width": 375, "height": 812})
+    page.route("**/commons/*-480.webp", lambda route: route.abort())
     page.goto(url + "?fallback#/recetas/focaccia-artesanal")
-    page.wait_for_function("document.querySelector('.photos img')?.currentSrc.endsWith('.jpg') && document.querySelector('.photos img').naturalWidth > 0")
-    page.route("**/recipes/*.jpg", lambda route: route.abort())
+    page.wait_for_function("document.querySelector('.photos img')?.currentSrc.endsWith('-960.webp') && document.querySelector('.photos img').naturalWidth > 0")
+    page.route("**/commons/*.webp", lambda route: route.abort())
     page.reload()
     page.wait_for_function("document.querySelector('.photos img')?.currentSrc.startsWith('data:image/') && document.querySelector('.photos img').naturalWidth > 0")
     assert not errors, errors
